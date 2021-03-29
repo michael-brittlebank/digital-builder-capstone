@@ -1,17 +1,18 @@
-from flask_restx import Namespace, Resource
+from flask import request
+from flask_restx import fields, Namespace, Resource
+from modules.data import *
 
 api = Namespace('data', description='Data related operations')
 
-@api.route('/')
+file = api.model('File', {
+    'filename': fields.String(required=True, description='The filename to be ingested')
+})
+
+@api.route('/ingest')
 class DataClass(Resource):
-	def get(self):
-		return {
-			"status": "Got new data"
-		}
 	def post(self):
-		return {
-			"status": "Posted new data"
-		}
+		filedata = ingest_zillow_csv(request.json['filename'])
+		return filedata[0:25]
 
 
 
