@@ -3,7 +3,7 @@
 from flask_restx import Api
 
 from .data import api as ns1
-from .graphs import api as ns2
+from .graph import api as ns2
 
 api = Api(
     title='CAP',
