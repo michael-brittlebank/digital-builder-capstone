@@ -1,4 +1,3 @@
-from flask import request
 from flask_restx import Namespace, reqparse, Resource
 from modules.data import *
 from modules.util import *

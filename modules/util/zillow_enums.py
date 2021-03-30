@@ -8,6 +8,10 @@ zillow_column_city = "City"
 zillow_column_metro = "Metro"
 zillow_column_county_name = "CountyName"
 
+custom_column_housing_type = "Housing Type"
+custom_column_date = "Date"
+custom_column_zhvi = "ZHVI"
+
 zillow_named_column_indexes = [zillow_column_region_id, zillow_column_size_rank, zillow_column_region_name,
                                zillow_column_region_type, zillow_column_state_name, zillow_column_state,
                                zillow_column_city, zillow_column_metro, zillow_column_county_name]
