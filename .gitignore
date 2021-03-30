@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-modules/
+#modules/
 lib64/
 parts/
 sdist/
@@ -129,4 +129,3 @@ dmypy.json
 .pyre/
 
 .idea/
-.ipynb_checkpoints/

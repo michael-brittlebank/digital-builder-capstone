@@ -11,8 +11,10 @@ file = api.model('File', {
 @api.route('/ingest')
 class DataClass(Resource):
 	def post(self):
-		filedata = ingest_zillow_csv(request.json['filename'])
-		return filedata[0:25]
+		raw_data = ingest_zillow_csv(request.json['filename'])
+		filtered_data = filter_normalise_zillow_data(raw_data)
+		# todo, store results in db
+		return filtered_data
 
 
 
