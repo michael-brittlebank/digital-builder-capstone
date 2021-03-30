@@ -17,7 +17,7 @@ def open_csv(filename):
     return data
 
 
-def ingest_zillow_csv(filename):
+def import_zillow_csv(filename):
     """
     ingest_zillow_csv tries to import and read a zillow csv file
     :param filename: string containing filename

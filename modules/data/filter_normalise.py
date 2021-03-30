@@ -3,15 +3,14 @@ import pandas as pd
 from ..util import *
 
 
-def filter_normalise_zillow_data(raw_data, data_type):
+def ingest_zillow_data(raw_data, data_type):
     """
-    filter_normalise_zillow_data filters zillow data by amfam locations
+    normalise_zillow_data translates csv data into analysable data
     :param raw_data: recently imported data from csv
     :param data_type: type of csv being imported
     :return: list of filtered data
     """
     filtered_data = []
-    state_index = zillow_named_column_indexes.index(zillow_column_state)
     # +1 for inclusive slice
     county_name_index = zillow_named_column_indexes.index(zillow_column_county_name)+1
     header_row = raw_data.pop(0)
@@ -19,12 +18,9 @@ def filter_normalise_zillow_data(raw_data, data_type):
     header_row = header_row[:county_name_index] # slice off date columns, handled in inflate_zillow_row_by_date
     header_row += [custom_column_housing_type, custom_column_date, custom_column_zhvi] # add new inflated column headers
     for row in raw_data[0:5]:  # todo, remove slice to get full import
-        row_state = row[state_index]
-        if row_state in amfam_territory_states:
-            # filter out if state not in amfam territory
-            normalised_row = normalise_zillow_row(row)
-            inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
-            filtered_data += inflated_rows
+        normalised_row = normalise_zillow_row(row)
+        inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
+        filtered_data += inflated_rows
     return [header_row] + filtered_data
 
 
