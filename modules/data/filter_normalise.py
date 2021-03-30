@@ -11,13 +11,12 @@ def ingest_zillow_data(raw_data, data_type):
     :return: list of filtered data
     """
     filtered_data = []
-    # +1 for inclusive slice
-    county_name_index = zillow_named_column_indexes.index(zillow_column_county_name)+1
+    county_name_index = zillow_named_column_indexes.index(zillow_column_county_name)
     header_row = raw_data.pop(0)
     original_header = copy.deepcopy(header_row)
-    header_row = header_row[:county_name_index] # slice off date columns, handled in inflate_zillow_row_by_date
+    header_row = header_row[:county_name_index+1] # slice off date columns, handled in inflate_zillow_row_by_date, +1 for inclusive slice
     header_row += [custom_column_housing_type, custom_column_date, custom_column_zhvi] # add new inflated column headers
-    for row in raw_data[0:5]:  # todo, remove slice to get full import
+    for row in raw_data[0:10]:  # todo, remove slice to get full import
         normalised_row = normalise_zillow_row(row)
         inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
         filtered_data += inflated_rows

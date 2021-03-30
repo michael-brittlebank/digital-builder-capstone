@@ -1,34 +1,38 @@
 # imports
 import csv
 from os import path
+from ..util import *
 
 
-# copied from https://automatetheboringstuff.com/chapter14/
-def open_csv(filename):
-    """
-    open_csv imports a csv file and returns the file data
-    :param filename: string containing filename and path
-    :return: list of file data
-    """
-    file = open(filename, encoding="utf-8")
-    reader = csv.reader(file)
-    data = list(reader)
-    file.close()
-    return data
-
-
-def import_zillow_csv(filename):
+def import_csv(filename):
     """
     ingest_zillow_csv tries to import and read a zillow csv file
     :param filename: string containing filename
     :return: list of file data
     """
-    full_filepath = 'files/'+filename #assume files are in specific directory
+    full_filepath = file_path + filename  # assume files are in specific directory
     try:
         if path.isfile(full_filepath):
-            return open_csv(full_filepath)
+            # copied from https://automatetheboringstuff.com/chapter14/
+            file = open(full_filepath, encoding="utf-8")
+            reader = csv.reader(file)
+            data = list(reader)
+            file.close()
+            return data
         else:
-            raise Exception(FileNotFoundError, full_filepath+' is not found')
+            raise Exception(FileNotFoundError, full_filepath + ' is not found')
     except Exception as instance:
         return str(instance)
 
+
+def export_csv(data_list, filename):
+    # temporary function
+    full_filepath = file_path + filename  # assume files are in specific directory
+    try:
+        with open(full_filepath, 'w') as f:
+            # using csv.writer method from CSV package
+            write = csv.writer(f)
+            write.writerows(data_list)
+        return True
+    except Exception as instance:
+        return str(instance)
