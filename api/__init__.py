@@ -2,8 +2,9 @@
 
 from flask_restx import Api
 
-from .files import api as ns1
-from .data import api as ns2
+from .files import api as ns_files
+from .data import api as ns_data
+from .maps import api as ns_maps
 
 api = Api(
     title='CAP',
@@ -12,5 +13,6 @@ api = Api(
     # All API metadatas
 )
 
-api.add_namespace(ns1)
-api.add_namespace(ns2)
+api.add_namespace(ns_files)
+api.add_namespace(ns_data)
+api.add_namespace(ns_maps)

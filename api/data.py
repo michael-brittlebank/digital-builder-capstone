@@ -5,7 +5,7 @@ api = Namespace('data', description='Data related operations', validate=True)
 
 base_parser = reqparse.RequestParser()
 base_parser.add_argument(
-    baseline_arg_amfam_only,
+    arg_baseline_amfam_only,
 	type=inputs.boolean,
 	required=True,
 	default=True,
@@ -13,8 +13,8 @@ base_parser.add_argument(
 )
 
 @api.route('/baseline')
-class BaselineGraphClass(Resource):
+class BaselineClass(Resource):
 	@api.expect(base_parser)
 	def get(self):
 		args = base_parser.parse_args()
-		return get_baseline_data(args[baseline_arg_amfam_only])
+		return get_baseline_data(args[arg_baseline_amfam_only])
