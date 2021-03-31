@@ -29,4 +29,4 @@ class BaselineClass(Resource):
         headers = {'Content-Type': 'text/csv'}
         args = base_parser.parse_args()
         data = get_baseline_data(args[arg_baseline_amfam_only], args[arg_baseline_raw_data])
-        return make_response(data, 200, headers)
+        return make_response(data.to_csv(), 200, headers)

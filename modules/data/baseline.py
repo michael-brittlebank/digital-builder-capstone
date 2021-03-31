@@ -14,7 +14,7 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     :return: list of baseline data
     """
     default_groupby = [zillow_column_region_name, custom_column_housing_type]
-    custom_column_raw_appreciation = 'Raw % Per Year'
+    custom_column_appreciation = '% Per Year'
     custom_column_zhvi_start = 'ZHVI Start'
     custom_column_zhvi_end = 'ZHVI End'
     custom_column_years_difference = 'Years Diff'
@@ -47,7 +47,7 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
 
     # create summary dataframe
     summary_dataframe = pd.DataFrame()
-    summary_dataframe[custom_column_date] = base_dataframe.groupby(default_groupby)[custom_column_date].first()
+    summary_dataframe[zillow_column_city] = base_dataframe.groupby(default_groupby)[zillow_column_city].first()
     summary_dataframe[zillow_column_state] = base_dataframe.groupby(default_groupby)[zillow_column_state].first()
 
     if is_only_amfam_data:
@@ -77,15 +77,15 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     summary_dataframe[custom_column_years_difference] = round(
         (summary_dataframe[custom_column_end_date] - summary_dataframe[custom_column_start_date]).dt.days / 365,
         1)  # estimate years from number of days between start and end
-    summary_dataframe[custom_column_raw_appreciation] = summary_dataframe.apply(
-            lambda row: get_home_appreciation_percentage_per_year(row[custom_column_zhvi_start],
-                                                                  row[custom_column_zhvi_end],
-                                                                  row[custom_column_years_difference],
-                                                                  is_raw_data), axis=1)
-    summary_dataframe = summary_dataframe.sort_values(custom_column_raw_appreciation,
+    summary_dataframe[custom_column_appreciation] = summary_dataframe.apply(
+        lambda row: get_home_appreciation_percentage_per_year(row[custom_column_zhvi_start],
+                                                              row[custom_column_zhvi_end],
+                                                              row[custom_column_years_difference],
+                                                              is_raw_data), axis=1)
+    summary_dataframe = summary_dataframe.sort_values(custom_column_appreciation,
                                                       ascending=False)  # sort table to find highest movers
     # format percentages
     if not is_raw_data:
-        summary_dataframe['% Per Year'] = summary_dataframe[custom_column_raw_appreciation].apply(percent_formatter)
-        del summary_dataframe[custom_column_raw_appreciation]  # drop after sorting
-    return summary_dataframe.to_csv()
+        summary_dataframe[custom_column_appreciation] = summary_dataframe[custom_column_appreciation].apply(
+            percent_formatter)
+    return summary_dataframe
