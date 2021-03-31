@@ -50,6 +50,9 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     summary_dataframe[custom_column_date] = base_dataframe.groupby(default_groupby)[custom_column_date].first()
     summary_dataframe[zillow_column_state] = base_dataframe.groupby(default_groupby)[zillow_column_state].first()
 
+    if is_only_amfam_data:
+        summary_dataframe = filter_dataframe_by_amfam_states(summary_dataframe)
+
     # columns
     zhvi_start = base_dataframe.groupby(default_groupby)[
         custom_column_zhvi].first()

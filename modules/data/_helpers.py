@@ -1,6 +1,8 @@
 import pandas as pd
 import locale
 
+from ..enums import *
+
 locale.setlocale(locale.LC_ALL, '')
 
 
@@ -56,3 +58,12 @@ def get_home_appreciation_percentage_per_year(initial_value, final_value, years,
         initial_value = currency_unformatter(initial_value)
     years = float(years)
     return (((final_value / initial_value) ** (1 / years)) - 1) * 100
+
+
+def filter_dataframe_by_amfam_states(dataframe):
+    """
+    filter_dataframe_by_amfam_states filters a dataframe to only include amfam operating states
+    :param dataframe: dataframe to modify
+    :return: dataframe
+    """
+    return dataframe[dataframe.State.isin(amfam_territory_states)]
