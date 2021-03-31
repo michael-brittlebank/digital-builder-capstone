@@ -16,7 +16,7 @@ def ingest_zillow_data(raw_data, data_type):
     original_header = copy.deepcopy(header_row)
     header_row = header_row[:county_name_index+1] # slice off date columns, handled in inflate_zillow_row_by_date, +1 for inclusive slice
     header_row += [custom_column_housing_type, custom_column_date, custom_column_zhvi] # add new inflated column headers
-    for row in raw_data[0:10]:  # todo, remove slice to get full import
+    for row in raw_data[0:50]:  # todo, remove slice to get full import
         normalised_row = normalise_zillow_row(row)
         inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
         filtered_data += inflated_rows

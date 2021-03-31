@@ -29,7 +29,7 @@ class DataClass(Resource):
 		filtered_data = ingest_zillow_data(raw_data, data_type)
 		export_csv(filtered_data, 'ingested_{type}.csv'.format(type=data_type.lower()))
 		# todo, store results in db
-		return filtered_data[0:5]
+		return len(filtered_data)
 
 
 
