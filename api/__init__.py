@@ -2,8 +2,8 @@
 
 from flask_restx import Api
 
-from .data import api as ns1
-from .graph import api as ns2
+from .files import api as ns1
+from .data import api as ns2
 
 api = Api(
     title='CAP',

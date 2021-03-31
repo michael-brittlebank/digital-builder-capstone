@@ -1,14 +1,13 @@
-# imports
 import csv
 from os import path
-from ..util import *
+from ..enums import *
 
 
 def import_csv(filename):
     """
     ingest_zillow_csv tries to import and read a zillow csv file
     :param filename: string containing filename
-    :return: list of file data
+    :return: list of file files
     """
     full_filepath = file_path + filename  # assume files are in specific directory
     try:
@@ -26,7 +25,12 @@ def import_csv(filename):
 
 
 def export_csv(data_list, filename):
-    # temporary function
+    """
+    ingest_zillow_csv tries to export a file to the local directory
+    :param data_list: list of data to be written to file
+    :param filename: string containing filename
+    :return: list of file files
+    """
     full_filepath = file_path + filename  # assume files are in specific directory
     try:
         with open(full_filepath, 'w') as f:
