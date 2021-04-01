@@ -1,4 +1,4 @@
-from flask_restx import inputs, Namespace, reqparse, Resource
+from flask_restx import Namespace, reqparse, Resource
 from modules.data import *
 
 api = Namespace('maps', description='Map related operations', validate=True)
@@ -15,7 +15,7 @@ locations_parser.add_argument(
     help='Longititude'
 )
 
-@api.route('/ingest')
+@api.route('/locations')
 class LocationsClass(Resource):
     @api.expect(locations_parser)
     def post(self):
