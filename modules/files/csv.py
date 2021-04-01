@@ -1,6 +1,6 @@
 import csv
 from os import path
-from ..enums import *
+from ._helpers import *
 
 
 def import_csv(filename):
@@ -9,7 +9,7 @@ def import_csv(filename):
     :param filename: string containing filename
     :return: list of file files
     """
-    full_filepath = file_path + filename  # assume files are in specific directory
+    full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
     try:
         if path.isfile(full_filepath):
             # copied from https://automatetheboringstuff.com/chapter14/
@@ -31,7 +31,7 @@ def export_csv(data_list, filename):
     :param filename: string containing filename
     :return: list of file files
     """
-    full_filepath = file_path + filename  # assume files are in specific directory
+    full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
     try:
         with open(full_filepath, 'w') as f:
             # using csv.writer method from CSV package

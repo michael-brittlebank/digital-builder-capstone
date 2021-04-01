@@ -1,6 +1,3 @@
-import pandas as pd
-import numpy as np
-
 from ..files import *
 from ._helpers import *
 from ..enums import *
@@ -14,12 +11,6 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     :return: list of baseline data
     """
     default_groupby = [zillow_column_region_name, custom_column_housing_type]
-    custom_column_appreciation = '% Per Year'
-    custom_column_zhvi_start = 'ZHVI Start'
-    custom_column_zhvi_end = 'ZHVI End'
-    custom_column_years_difference = 'Years Diff'
-    custom_column_start_date = 'Start Date'
-    custom_column_end_date = 'End Date'
 
     # todo, replace with db call
     raw_condo_data = import_csv("ingested_condo.csv")

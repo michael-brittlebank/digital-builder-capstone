@@ -30,10 +30,3 @@ class IngestClass(Resource):
 		export_csv(filtered_data, 'ingested_{type}.csv'.format(type=data_type.lower()))
 		# todo, store results in db
 		return len(filtered_data)
-
-
-
-
-
-#https://www.codementor.io/@sagaragarwal94/building-a-basic-restful-api-in-python-58k02xsiq
-#https://stackoverflow.com/questions/7907596/json-dumps-vs-flask-jsonify
