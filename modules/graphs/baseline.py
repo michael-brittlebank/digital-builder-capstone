@@ -1,5 +1,6 @@
 import matplotlib
-matplotlib.use("TKAgg")
+# https://stackoverflow.com/questions/15713279/calling-pylab-savefig-without-display-in-ipython/15713545#15713545
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from ..data import *
@@ -59,5 +60,5 @@ def build_summary_graph(dataframe):
     dataframe.insert(len(dataframe.columns), custom_column_trend,
                      f(dataframe[custom_column_zhvi_end]))  # insert trend data at end
 
-    dataframe.plot(x=custom_column_zhvi_end, y=custom_column_trend, color='Red', ax=plot)
+    dataframe = dataframe.plot(x=custom_column_zhvi_end, y=custom_column_trend, color='Red', ax=plot)
     return dataframe
