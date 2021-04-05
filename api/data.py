@@ -6,14 +6,6 @@ api = Namespace('data', description='Data related operations', validate=True)
 
 base_parser = reqparse.RequestParser()
 base_parser.add_argument(
-    arg_baseline_amfam_only,
-    type=inputs.boolean,
-    required=True,
-    default=True,
-    help='Return data for AmFam operating states only'
-)
-
-base_parser.add_argument(
     arg_baseline_raw_data,
     type=inputs.boolean,
     required=True,
@@ -22,11 +14,31 @@ base_parser.add_argument(
 )
 
 
+baseline_parser = reqparse.deepcopy(base_parser)
+baseline_parser.add_argument(
+    arg_baseline_amfam_only,
+    type=inputs.boolean,
+    required=True,
+    default=True,
+    help='Return data for AmFam operating states only'
+)
+
+
 @api.route('/baseline')
 class BaselineClass(Resource):
-    @api.expect(base_parser)
+    @api.expect(baseline_parser)
     def get(self):
         headers = {'Content-Type': 'text/csv'}
         args = base_parser.parse_args()
         data = get_baseline_data(args[arg_baseline_amfam_only], args[arg_baseline_raw_data])
         return make_response(data.to_csv(), 200, headers)
+
+
+@api.route('/forecast')
+class ForecastClass(Resource):
+    @api.expect(base_parser)
+    def get(self):
+        headers = {'Content-Type': 'text/csv'}
+        args = base_parser.parse_args()
+        data = get_forecast_data(args[arg_baseline_raw_data])
+        return make_response(data, 200, headers)
