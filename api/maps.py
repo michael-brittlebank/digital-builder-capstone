@@ -1,5 +1,6 @@
 from flask_restx import Namespace, reqparse, Resource
 from modules.data import *
+from modules.maps import *
 
 api = Namespace('maps', description='Map related operations', validate=True)
 
@@ -22,5 +23,4 @@ class LocationsClass(Resource):
         args = locations_parser.parse_args()
         latitude = args[arg_locations_latitude]
         longitude = args[arg_locations_longitude]
-        google_api_key = os.getenv('GOOGLE_API_KEY')
-        return "lat {}, long {}".format(google_api_key, longitude)
+        return get_latitude_longitude_for_zip('53545')
