@@ -1,8 +1,9 @@
-import csv
 from os import path
+import json
 
 from ._helpers import *
 from ..enums import *
+
 
 def import_json(filename):
     """
@@ -13,12 +14,10 @@ def import_json(filename):
     full_filepath = get_full_file_path(file_import_path_list, filename)  # assume files are in specific directory
     try:
         if path.isfile(full_filepath):
-            # copied from https://automatetheboringstuff.com/chapter14/
             file = open(full_filepath, encoding="utf-8")
-            reader = csv.reader(file)
-            data = list(reader)
+            raw_data = file.read()
             file.close()
-            return data
+            return json.loads(raw_data)
         else:
             raise Exception(FileNotFoundError, full_filepath + ' is not found')
     except Exception as instance:
@@ -33,14 +32,12 @@ def export_json(data, filename, export_path=file_export_path_json):
     :param export_path: string for specified output folder
     :return: list of file files
     """
-    # todo, implement json reader and exporter
     export_path_list = file_export_path_list + export_path
     full_filepath = get_full_file_path(export_path_list, filename)  # assume files are in specific directory
     try:
-        with open(full_filepath, 'w') as f:
-            # using csv.writer method from CSV package
-            write = csv.writer(f)
-            write.writerows(data)
+        file = open(full_filepath, "w", encoding="utf-8")
+        file.write(data)
+        file.close()
         return True
     except Exception as instance:
         return str(instance)
