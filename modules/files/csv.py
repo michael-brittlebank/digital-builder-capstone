@@ -34,7 +34,7 @@ def export_csv(data_list, filename, export_path=file_export_path_csv):
     :param export_path: string for specified output folder
     :return: boolean or string exception
     """
-    export_path_list = file_export_path_list + export_path
+    export_path_list = file_export_path_list + [export_path]
     full_filepath = get_full_file_path(export_path_list, filename)  # assume files are in specific directory
     try:
         with open(full_filepath, 'w') as f:

@@ -20,5 +20,7 @@ class LocationsClass(Resource):
     def post(self):
         args = locations_parser.parse_args()
         zipcode = args[arg_locations_zipcode]
-        radius = args[arg_locations_radius]
-        return get_amfam_locations_by_zipcode(zipcode,radius)
+        radius = 10
+        if args[arg_locations_radius] is not None:
+            radius = args[arg_locations_radius]
+        return get_amfam_locations_by_zipcode(zipcode, radius)

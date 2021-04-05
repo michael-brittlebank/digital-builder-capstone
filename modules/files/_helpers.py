@@ -8,5 +8,5 @@ def get_full_file_path(file_path_list, file_name):
     :param file_name: file name
     :return: file path string
     """
-    file_path_list.append(file_name)
-    return os.path.join(file_path_list)
+    path_list = file_path_list + [file_name]
+    return os.path.join(*path_list)  # splat * to unpack list arg
