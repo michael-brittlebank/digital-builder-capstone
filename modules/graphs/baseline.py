@@ -20,12 +20,17 @@ def get_baseline_graphs(is_only_amfam_data):
     dataframe = baseline_data.reset_index(custom_column_housing_type)  # remove multiindex to filter on housing type
     default_groupby = [custom_column_housing_type]
 
+    graph_title_suffix = "(All States)"
+    if is_only_amfam_data:
+        graph_title_suffix = "(AmFam States)"
     # build condo graph
-    condo_graph = build_summary_graph(dataframe[dataframe[custom_column_housing_type] == zillow_data_type_condo])
+    graph_title = "Condos {}".format(graph_title_suffix)
+    condo_graph = build_summary_graph(dataframe[dataframe[custom_column_housing_type] == zillow_data_type_condo], graph_title)
     export_graph(condo_graph, zillow_data_type_condo.lower())
 
     # build sfr graph
-    sfr_graph = build_summary_graph(dataframe[dataframe[custom_column_housing_type] == zillow_data_type_sfr])
+    graph_title = "SFR {}".format(graph_title_suffix)
+    sfr_graph = build_summary_graph(dataframe[dataframe[custom_column_housing_type] == zillow_data_type_sfr], graph_title)
     export_graph(sfr_graph, zillow_data_type_sfr.lower())
 
     # build summary table
@@ -40,15 +45,16 @@ def get_baseline_graphs(is_only_amfam_data):
     return summary_dataframe
 
 
-def build_summary_graph(dataframe):
+def build_summary_graph(dataframe, title):
     """
     build_summary_graph builds a summary graph for a dataframe looking at end ZHVI compared to overall percent increase
-    :param dataframe: boolean for whether to return data in amfam's operating states or all states
+    :param dataframe: pandas dataframe
+    :param title: graph title
     :return: pandas dataframe with summary table
     """
     custom_column_trend = "Trend"
 
-    plot = dataframe.plot(kind='scatter', x=custom_column_zhvi_end, y=custom_column_appreciation)
+    plot = dataframe.plot(kind='scatter', x=custom_column_zhvi_end, y=custom_column_appreciation, title=title)
 
     plot.xaxis.set_major_formatter(plt.FuncFormatter(formatter_currency))
     plot.yaxis.set_major_formatter(plt.FuncFormatter(formatter_percent))

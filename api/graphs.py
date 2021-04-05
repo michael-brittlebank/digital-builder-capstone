@@ -21,5 +21,12 @@ class IngestClass(Resource):
     def post(self):
         headers = {'Content-Type': 'text/csv'}
         args = baseline_parser.parse_args()
-        data = get_baseline_graphs(args[arg_baseline_amfam_only])
+        amfam_only = args[arg_baseline_amfam_only]
+        data = get_baseline_graphs(amfam_only)
+        # export data
+        current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        data_type = "raw"
+        if amfam_only:
+            data_type = "amfamOnly"
+        export_dataframe_to_csv(data, "{}-{}-{}.csv".format("summary", data_type, current_datetime))
         return make_response(data.to_csv(), 200, headers)

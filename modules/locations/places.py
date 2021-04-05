@@ -36,6 +36,7 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
     else:
         logging.error("Location not found: %s", location)
         pass
+    # todo, store location count in db
     return result_count
 
 
