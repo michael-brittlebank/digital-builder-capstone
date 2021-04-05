@@ -22,4 +22,5 @@ class LocationsClass(Resource):
         args = locations_parser.parse_args()
         latitude = args[arg_locations_latitude]
         longitude = args[arg_locations_longitude]
-        return "lat {}, long {}".format(latitude, longitude)
+        google_api_key = os.getenv('GOOGLE_API_KEY')
+        return "lat {}, long {}".format(google_api_key, longitude)

@@ -1,5 +1,5 @@
 # Requirements
-[https://pipenv.pypa.io/en/latest/#](https://pipenv.pypa.io/en/latest/#)
+[Anaconda](https://www.anaconda.com/products/individual)
 
 # Run
 ```
