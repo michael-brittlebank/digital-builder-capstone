@@ -3,11 +3,11 @@ from os import path
 from ._helpers import *
 
 
-def import_csv(filename):
+def import_json(filename):
     """
-    ingest_csv tries to import and read a csv file
+    ingest_json tries to import and read a json file
     :param filename: string containing filename
-    :return: list of data
+    :return: list of file files
     """
     full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
     try:
@@ -24,12 +24,12 @@ def import_csv(filename):
         return str(instance)
 
 
-def export_csv(data_list, filename):
+def export_csv(data, filename):
     """
-    export_csv tries to export a csv file to the local directory
-    :param data_list: list of data to be written to file
+    export_json tries to export a json file to the local directory
+    :param data: json data to be written to file
     :param filename: string containing filename
-    :return: boolean or string exception
+    :return: list of file files
     """
     full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
     try:

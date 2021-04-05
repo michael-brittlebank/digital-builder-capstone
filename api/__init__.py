@@ -4,7 +4,7 @@ from flask_restx import Api
 
 from .files import api as ns_files
 from .data import api as ns_data
-from .maps import api as ns_maps
+from .locations import api as ns_maps
 from .graphs import api as ns_graphs
 
 api = Api(
