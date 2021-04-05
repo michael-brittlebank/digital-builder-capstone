@@ -18,10 +18,10 @@ baseline_parser.add_argument(
 @api.route('/baseline')
 class IngestClass(Resource):
     @api.expect(baseline_parser)
-    def post(self):
-        headers = {'Content-Type': 'text/csv'}
+    def get(self):
         args = baseline_parser.parse_args()
         amfam_only = args[arg_baseline_amfam_only]
+        # get data
         data = get_baseline_graphs(amfam_only)
         # export data
         current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -29,4 +29,6 @@ class IngestClass(Resource):
         if amfam_only:
             data_type = "amfamOnly"
         export_dataframe_to_csv(data, "{}-{}-{}.csv".format("summary", data_type, current_datetime))
+        # response
+        headers = {'Content-Type': 'text/csv'}
         return make_response(data.to_csv(), 200, headers)

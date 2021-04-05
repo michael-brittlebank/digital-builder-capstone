@@ -14,10 +14,10 @@ locations_parser.add_argument(
     help='Radius'
 )
 
-@api.route('/locations')
+@api.route('/nearby')
 class LocationsClass(Resource):
     @api.expect(locations_parser)
-    def post(self):
+    def get(self):
         args = locations_parser.parse_args()
         zipcode = args[arg_locations_zipcode]
         radius = 10
