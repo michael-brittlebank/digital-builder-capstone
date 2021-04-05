@@ -1,7 +1,8 @@
 import csv
 from os import path
-from ._helpers import *
 
+from ._helpers import *
+from ..enums import *
 
 def import_json(filename):
     """
@@ -9,7 +10,7 @@ def import_json(filename):
     :param filename: string containing filename
     :return: list of file files
     """
-    full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
+    full_filepath = get_full_file_path(file_import_path_list, filename)  # assume files are in specific directory
     try:
         if path.isfile(full_filepath):
             # copied from https://automatetheboringstuff.com/chapter14/
@@ -24,19 +25,22 @@ def import_json(filename):
         return str(instance)
 
 
-def export_csv(data, filename):
+def export_json(data, filename, export_path=file_export_path_json):
     """
     export_json tries to export a json file to the local directory
     :param data: json data to be written to file
     :param filename: string containing filename
+    :param export_path: string for specified output folder
     :return: list of file files
     """
-    full_filepath = get_full_file_path(get_file_input_path(), filename)  # assume files are in specific directory
+    # todo, implement json reader and exporter
+    export_path_list = file_export_path_list + export_path
+    full_filepath = get_full_file_path(export_path_list, filename)  # assume files are in specific directory
     try:
         with open(full_filepath, 'w') as f:
             # using csv.writer method from CSV package
             write = csv.writer(f)
-            write.writerows(data_list)
+            write.writerows(data)
         return True
     except Exception as instance:
         return str(instance)

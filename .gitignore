@@ -129,4 +129,4 @@ dmypy.json
 .pyre/
 
 .idea/
-files/output/
+files/output/graphs/

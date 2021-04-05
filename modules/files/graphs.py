@@ -1,6 +1,8 @@
 from ._helpers import *
 from datetime import datetime
 
+from ..enums import *
+
 
 def export_graph(pandas_plot, filename):
     """
@@ -11,7 +13,8 @@ def export_graph(pandas_plot, filename):
     """
     current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     full_filename = "{}-{}.png".format(filename, current_datetime)
-    full_filepath = get_full_file_path(get_file_output_path(), full_filename)  # assume files are in specific directory
+    export_paths = file_export_path_list+file_export_path_graphs
+    full_filepath = get_full_file_path(export_paths, full_filename)  # assume files are in specific directory
     try:
         pandas_plot.figure.savefig(full_filepath)
         return True

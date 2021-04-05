@@ -14,7 +14,7 @@ def get_location_for_zipcode(zipcode):
     location = {}
     location[location_latitude] = None
     location[location_longitude] = None
-    google_api_key = os.getenv('GOOGLE_API_KEY')
+    google_api_key = os.getenv(env_google_api_key)
     gmaps = googlemaps.Client(key=google_api_key)
     geocode_result = gmaps.geocode(str(zipcode))
     try:

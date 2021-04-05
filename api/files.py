@@ -8,7 +8,7 @@ ingest_parser = reqparse.RequestParser()
 ingest_parser.add_argument(
     arg_ingest_filename,
 	required=True,
-    help='The filename to be ingested',
+    help='The filename to be csv',
 	trim=True
 )
 ingest_parser.add_argument(

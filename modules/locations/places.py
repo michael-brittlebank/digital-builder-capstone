@@ -2,7 +2,7 @@ import googlemaps
 
 from .geocode import *
 from ._helpers import *
-from ..enums import *
+from ..files import *
 
 
 def get_amfam_locations_by_zipcode(zipcode, radius=10):
@@ -17,7 +17,7 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
     places_result = None
     location = get_location_for_zipcode(zipcode)
     if location[location_latitude] is not None:
-        google_api_key = os.getenv('GOOGLE_API_KEY')
+        google_api_key = os.getenv(env_google_api_key)
         gmaps = googlemaps.Client(key=google_api_key)
         places_result = gmaps.places_nearby(
                 location=location,
@@ -25,7 +25,7 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
                 keyword="american family",
                 type=["insurance_agency"]
             )
-
+        export_json(places_result, "{}.json".format(zipcode), file_export_path_places)
     else:
         # todo, log something here to catch parsing errors
         pass
