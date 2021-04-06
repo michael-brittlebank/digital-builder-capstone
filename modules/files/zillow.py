@@ -1,6 +1,8 @@
 import copy
 import pandas as pd
+
 from ..enums import *
+from ..files import mysql_zillow
 
 
 def ingest_zillow_data(raw_data, data_type):
@@ -10,6 +12,8 @@ def ingest_zillow_data(raw_data, data_type):
     :param data_type: type of csv being imported
     :return: list of filtered files
     """
+    mysql_zillow.populate_housing_types()
+    return "cake"
     filtered_data = []
     county_name_index = zillow_named_column_indexes.index(zillow_column_county_name)
     header_row = raw_data.pop(0)
