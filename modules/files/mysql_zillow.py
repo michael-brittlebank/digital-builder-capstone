@@ -148,7 +148,7 @@ def get_location_by_region_name_and_housing_type(region_name, housing_type_id):
     try:
         get_location_data = ("SELECT * FROM {table_name} "
                              "WHERE region_name={region_name} "
-                             "AND WHERE housing_type_id=housing_type_id"
+                             "AND WHERE housing_type_id=housing_type_id "
                              "LIMIT 1").format(
             table_name=table_locations,
             region_name=region_name,
@@ -227,8 +227,6 @@ def insert_location(data, header_row, housing_type_id):
 
 
 def insert_housing_data(rows, header_row, data_type):
-    connection = get_connection()
-    cursor = connection.cursor()
     add_housing_data = ""
     try:
         # get housing type id
@@ -244,6 +242,8 @@ def insert_housing_data(rows, header_row, data_type):
             location_id = insert_location(location_data, header_row, housing_type_id)
         else:
             location_id = location[0]
+        connection = get_connection()
+        cursor = connection.cursor()
         values = []
         for row in rows:
             raw_datetime = row[header_row.index(custom_column_date)]
@@ -266,6 +266,8 @@ def insert_housing_data(rows, header_row, data_type):
         cursor.execute(add_housing_data)
         # Make sure data is committed to the database
         connection.commit()
+        close_connection_or_cursor(cursor)
+        close_connection_or_cursor(connection)
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_DUP_ENTRY:
             logging.info("Housing data already exists {}".format(add_housing_data))
@@ -273,5 +275,28 @@ def insert_housing_data(rows, header_row, data_type):
             logging.exception(err.msg)
     except Exception as err:
         logging.exception(err)
-    close_connection_or_cursor(cursor)
-    close_connection_or_cursor(connection)
+
+
+# def get_zillow_data():
+#     connection = get_connection()
+#     cursor = connection.cursor()
+#     rows = []
+#     try:
+#         get_location_data = ("SELECT * FROM {table_name} "
+#                              "WHERE region_name={region_name} "
+#                              "AND WHERE housing_type_id=housing_type_id"
+#                              "LIMIT 1").format(
+#             table_name=table_locations,
+#             region_name=region_name,
+#             housing_type_id=housing_type_id
+#         )
+#         cursor.execute(get_location_data)
+#         if cursor.rowcount > 0:
+#             location = cursor.fetchone()
+#     except mysql.connector.Error as err:
+#         logging.exception(err.msg)
+#     except Exception as err:
+#         logging.exception(err)
+#     close_connection_or_cursor(cursor)
+#     close_connection_or_cursor(connection)
+#     return rows
