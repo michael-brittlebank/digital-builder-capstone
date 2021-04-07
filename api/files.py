@@ -29,7 +29,9 @@ class IngestClass(Resource):
         data_type = args[arg_ingest_type]
         raw_data = import_csv(args[arg_ingest_filename])
         filtered_data = ingest_zillow_data(raw_data, data_type)
-        export_csv(filtered_data, 'ingested-{type}.csv'.format(type=data_type.lower()))
+        debug_mode = os.getenv(env_flask_debug_mode)
+        if bool(debug_mode):
+            export_csv(filtered_data, 'ingested-{type}.csv'.format(type=data_type.lower()), file_export_path_testing)
         return len(filtered_data)
 
 

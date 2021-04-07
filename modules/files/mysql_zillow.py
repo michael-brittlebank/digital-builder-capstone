@@ -141,16 +141,18 @@ def populate_housing_types():
     close_connection_or_cursor(connection)
 
 
-def get_location_by_region_name(region_name):
+def get_location_by_region_name_and_housing_type(region_name, housing_type_id):
     connection = get_connection()
     cursor = connection.cursor(buffered=True)
     location = None
     try:
         get_location_data = ("SELECT * FROM {table_name} "
                              "WHERE region_name={region_name} "
+                             "AND WHERE housing_type_id=housing_type_id"
                              "LIMIT 1").format(
             table_name=table_locations,
-            region_name=region_name
+            region_name=region_name,
+            housing_type_id=housing_type_id
         )
         cursor.execute(get_location_data)
         if cursor.rowcount > 0:
@@ -164,7 +166,30 @@ def get_location_by_region_name(region_name):
     return location
 
 
-def insert_location(data, header_row):
+def get_housing_type_by_name(housing_type_name):
+    connection = get_connection()
+    cursor = connection.cursor(buffered=True)
+    housing_type = None
+    try:
+        get_location_data = ("SELECT * FROM {table_name} "
+                             "WHERE housing_type='{housing_type}' "
+                             "LIMIT 1").format(
+            table_name=table_housing_type,
+            housing_type=housing_type_name
+        )
+        cursor.execute(get_location_data)
+        if cursor.rowcount > 0:
+            housing_type = cursor.fetchone()
+    except mysql.connector.Error as err:
+        logging.exception(err.msg)
+    except Exception as err:
+        logging.exception(err)
+    close_connection_or_cursor(cursor)
+    close_connection_or_cursor(connection)
+    return housing_type
+
+
+def insert_location(data, header_row, housing_type_id):
     connection = get_connection()
     cursor = connection.cursor()
     region_name = None
@@ -172,7 +197,7 @@ def insert_location(data, header_row):
     try:
         region_name = data[header_row.index(zillow_column_region_name)]
         values = "({housing_type_id},{region_name},'{state}', '{city}', '{metro}', '{county}')".format(
-            housing_type_id=1,  # todo, replace with query
+            housing_type_id=housing_type_id,
             region_name=region_name,
             state=data[header_row.index(zillow_column_state)],
             city=data[header_row.index(zillow_column_city)],
@@ -201,16 +226,22 @@ def insert_location(data, header_row):
     return location_id
 
 
-def insert_housing_data(rows, header_row):
+def insert_housing_data(rows, header_row, data_type):
     connection = get_connection()
     cursor = connection.cursor()
+    add_housing_data = ""
     try:
+        # get housing type id
+        housing_type = get_housing_type_by_name(data_type)
+        housing_type_id = housing_type[0]
+
         location_data = rows[0]  # assume only one location will be sent in a batch
+        region_name = location_data[header_row.index(zillow_column_region_name)]
         # get location id
-        location = get_location_by_region_name(location_data[header_row.index(zillow_column_region_name)])
+        location = get_location_by_region_name_and_housing_type(region_name, housing_type_id)
         # insert location if doesn't exist
         if not location:
-            location_id = insert_location(location_data, header_row)
+            location_id = insert_location(location_data, header_row, housing_type_id)
         else:
             location_id = location[0]
         values = []
@@ -219,9 +250,9 @@ def insert_housing_data(rows, header_row):
             formatted_date = datetime.datetime.strptime(raw_datetime, '%Y-%m-%d %H:%M:%S')
             values.append(
                 "({location_id},'{date}',{zhvi})".format(
-                    location_id=int(location_id),
+                    location_id=location_id,
                     date=formatted_date,
-                    zhvi=int(row[header_row.index(custom_column_zhvi)])
+                    zhvi=row[header_row.index(custom_column_zhvi)]
                 )
             )
         add_housing_data = (
@@ -237,7 +268,7 @@ def insert_housing_data(rows, header_row):
         connection.commit()
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_DUP_ENTRY:
-            logging.info("Housing data already exists")
+            logging.info("Housing data already exists {}".format(add_housing_data))
         else:
             logging.exception(err.msg)
     except Exception as err:
