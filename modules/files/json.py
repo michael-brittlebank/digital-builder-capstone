@@ -37,7 +37,6 @@ def export_json(data, filename, export_path=file_export_path_json):
     export_path_list = file_export_path_list + [export_path]
     full_filepath = get_full_file_path(export_path_list, filename)  # assume files are in specific directory
     try:
-        logging.warning("export_json - in try: %s", full_filepath)
         file = open(full_filepath, "w", encoding="utf-8")
         file.write(data)
         file.close()
