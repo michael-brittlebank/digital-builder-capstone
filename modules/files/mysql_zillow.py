@@ -102,6 +102,7 @@ def create_application_tables():
 def populate_housing_types():
     connection = get_connection()
     cursor = connection.cursor()
+    logging.warning("populate")
     try:
         add_housing_type = (
             "INSERT INTO {} "
@@ -111,10 +112,12 @@ def populate_housing_types():
             )
         )
         for housing_type in zillow_data_housing_types:
-            cursor.execute(add_housing_type, housing_type)
+            cursor.execute(add_housing_type, (housing_type,))
         # Make sure data is committed to the database
-        cursor.commit()
+        connection.commit()
     except mysql.connector.Error as err:
         logging.warning(err.msg)
+    except Exception as err:
+        logging.warning(err)
     close_connection_or_cursor(cursor)
     close_connection_or_cursor(connection)
