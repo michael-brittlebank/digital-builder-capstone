@@ -23,6 +23,6 @@ def get_location_for_zipcode(zipcode):
         if len(geocode_result) > 0:
             location = geocode_result[0]['geometry']['location']
     except Exception as err:
-        logging.error(err)
+        logging.exception(err)
         pass
     return location

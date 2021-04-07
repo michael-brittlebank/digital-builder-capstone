@@ -2,6 +2,7 @@ import mysql.connector
 from mysql.connector import connect, Error, errorcode, pooling
 import logging
 import os
+import datetime
 
 from modules.enums import *
 
@@ -23,12 +24,12 @@ def get_connection():
             # populate tables as needed
             populate_housing_types()
         except Error as e:
-            logging.error(e)
+            logging.exception(e)
     try:
         connection = _connection_pool.get_connection()
         return connection
     except Error as e:
-        logging.error(e)
+        logging.exception(e)
         return None
 
 
@@ -66,6 +67,7 @@ def create_application_tables():
         ))
     tables[table_housing_by_zip] = (
         "CREATE TABLE `{housing_table}` ("
+        "  `housing_zip_id` int NOT NULL AUTO_INCREMENT,"
         "  `{housing_type_id}` int NOT NULL,"
         "  `region_name` int NOT NULL,"
         "  `state` varchar(2) NOT NULL,"
@@ -74,8 +76,7 @@ def create_application_tables():
         "  `county` varchar(255) NOT NULL,"
         "  `date` datetime NOT NULL,"
         "  `zhvi` int NOT NULL,"
-        "  `region_id` int NOT NULL,"
-        "  PRIMARY KEY (`region_name`,`{housing_type_id}`), KEY `housing_type_id` (`housing_type_id`),"
+        "  PRIMARY KEY (`housing_zip_id`),"
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB".format(
@@ -90,9 +91,9 @@ def create_application_tables():
             cursor.execute(table_description)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
-                logging.warning("Table {} already exists.".format(table_name))
+                logging.exception("Table {} already exists.".format(table_name))
             else:
-                logging.warning(err.msg)
+                logging.exception(err.msg)
         else:
             logging.warning("Table {} created.".format(table_name))
     close_connection_or_cursor(cursor)
@@ -116,8 +117,47 @@ def populate_housing_types():
         # Make sure data is committed to the database
         connection.commit()
     except mysql.connector.Error as err:
-        logging.warning(err.msg)
+        logging.exception(err.msg)
     except Exception as err:
-        logging.warning(err)
+        logging.exception(err)
+    close_connection_or_cursor(cursor)
+    close_connection_or_cursor(connection)
+
+
+def insert_housing_data(rows, header_row):
+    connection = get_connection()
+    cursor = connection.cursor()
+    try:
+        values = []
+        for row in rows:
+            raw_datetime = row[header_row.index(custom_column_date)]
+            formatted_date = datetime.datetime.strptime(raw_datetime, '%Y-%m-%d %H:%M:%S')
+            values.append(
+                "({housing_type_id},{region_name},'{state}', '{city}', '{metro}', '{county}', '{date}', {zhvi})".format(
+                    housing_type_id=1,  # todo, replace with query
+                    region_name=row[header_row.index(zillow_column_region_name)],
+                    state=row[header_row.index(zillow_column_state)],
+                    city=row[header_row.index(zillow_column_city)],
+                    metro=row[header_row.index(zillow_column_metro)],
+                    county=row[header_row.index(zillow_column_county_name)],
+                    date=formatted_date,
+                    zhvi=int(row[header_row.index(custom_column_zhvi)])
+                )
+            )
+        add_housing_data = (
+            "INSERT INTO {} "
+            "(housing_type_id, region_name, state, city, metro, county, date, zhvi) "
+            "VALUES {}".format(
+                table_housing_by_zip,
+                ",".join(values)
+            )
+        )
+        cursor.execute(add_housing_data)
+        # Make sure data is committed to the database
+        connection.commit()
+    except mysql.connector.Error as err:
+        logging.exception(err.msg)
+    except Exception as err:
+        logging.exception(err)
     close_connection_or_cursor(cursor)
     close_connection_or_cursor(connection)

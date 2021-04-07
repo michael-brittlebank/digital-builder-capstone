@@ -8,22 +8,24 @@ from ..files import mysql_zillow
 def ingest_zillow_data(raw_data, data_type):
     """
     normalise_zillow_data translates csv files into analysable files
-    :param raw_data: recently imported files from csv
+    :param raw_data: recently imported file lines from csv
     :param data_type: type of csv being imported
     :return: list of filtered files
     """
-    mysql_zillow.populate_housing_types()
-    return "cake"
     filtered_data = []
     county_name_index = zillow_named_column_indexes.index(zillow_column_county_name)
     header_row = raw_data.pop(0)
     original_header = copy.deepcopy(header_row)
-    header_row = header_row[:county_name_index+1] # slice off date columns, handled in inflate_zillow_row_by_date, +1 for inclusive slice
-    header_row += [custom_column_housing_type, custom_column_date, custom_column_zhvi] # add new inflated column headers
-    for row in raw_data[0:50]:  # todo, remove slice to get full import
+    header_row = header_row[
+                 :county_name_index + 1]  # slice off date columns, handled in inflate_zillow_row_by_date, +1 for inclusive slice
+    header_row += [custom_column_housing_type, custom_column_date,
+                   custom_column_zhvi]  # add new inflated column headers
+    raw_data = raw_data[:50]  # todo, remove slice to get full import
+    for row in raw_data:
         normalised_row = normalise_zillow_row(row)
         inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
         filtered_data += inflated_rows
+        mysql_zillow.insert_housing_data(inflated_rows, header_row)
     return [header_row] + filtered_data
 
 
@@ -68,7 +70,7 @@ def inflate_zillow_row_by_date(row, header, data_type):
     common_row_metadata = row[:county_name_index]  # everything to housing type is common
     for index in range(county_name_index, len(header)):
         common_copy = copy.deepcopy(common_row_metadata)
-        common_copy.append(data_type) # add the files type for differentiating condos and single family residences
+        common_copy.append(data_type)  # add the files type for differentiating condos and single family residences
         converted_header_to_timestamp = str(pd.to_datetime(header[index]))
         common_copy.append(converted_header_to_timestamp)  # add header date
         common_copy.append(row[index])  # housing value at date
