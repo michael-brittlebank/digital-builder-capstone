@@ -17,6 +17,8 @@ custom_column_zhvi_end = 'Final ZHVI'
 custom_column_years_difference = 'Years Diff'
 custom_column_start_date = 'Start Date'
 custom_column_end_date = 'End Date'
+custom_column_zhvi_min = 'ZHVI Min'
+custom_column_zhvi_max = 'ZHVI Max'
 
 zillow_named_column_indexes = [zillow_column_region_id, zillow_column_size_rank, zillow_column_region_name,
                                zillow_column_region_type, zillow_column_state_name, zillow_column_state,

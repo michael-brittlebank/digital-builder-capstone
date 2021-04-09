@@ -14,7 +14,7 @@ base_parser.add_argument(
 )
 
 
-baseline_parser = reqparse.deepcopy(base_parser)
+baseline_parser = base_parser.copy()
 baseline_parser.add_argument(
     arg_baseline_amfam_only,
     type=inputs.boolean,
@@ -29,9 +29,11 @@ class BaselineClass(Resource):
     @api.expect(baseline_parser)
     def get(self):
         headers = {'Content-Type': 'text/csv'}
-        args = base_parser.parse_args()
-        data = get_baseline_data(args[arg_baseline_amfam_only], args[arg_baseline_raw_data])
-        return make_response(data.to_csv(), 200, headers)
+        args = baseline_parser.parse_args()
+        amfam_data_only = args[arg_baseline_amfam_only]
+        raw_data = args[arg_baseline_raw_data]
+        data = get_baseline_data(amfam_data_only, raw_data)
+        return make_response(data.head(25).to_csv(), 200, headers)
 
 
 @api.route('/forecast')

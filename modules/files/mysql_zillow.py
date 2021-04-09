@@ -3,21 +3,28 @@ from mysql.connector import connect, Error, errorcode, pooling
 import logging
 import os
 import datetime
-import json
+import pandas as pd
+import pandas.io.sql as pds
 
 from modules.enums import *
 
 _connection_pool = None
 
 
-def get_connection():
+def get_connection(config=None):
     global _connection_pool
-    if not _connection_pool:
+    if config is None:
+        config = {
+            env_database_host: os.getenv(env_database_host),
+            env_database_username: os.getenv(env_database_username),
+            env_database_password: os.getenv(env_database_password)
+        }
+    if _connection_pool is None:
         try:
             _connection_pool = pooling.MySQLConnectionPool(
-                host=os.getenv(env_database_host),
-                user=os.getenv(env_database_username),
-                password=os.getenv(env_database_password),
+                host=config[env_database_host],
+                user=config[env_database_username],
+                password=config[env_database_password],
                 database="capstone",
                 pool_name="capstone_pool")
             # check to ensure tables exist
@@ -48,8 +55,8 @@ def create_application_tables():
         "  `housing_type` varchar(255) NOT NULL UNIQUE,"
         "  PRIMARY KEY (`housing_type_id`)"
         ") ENGINE=InnoDB").format(
-            table_name=table_housing_type
-        )
+        table_name=table_housing_type
+    )
     tables[table_summary] = (
         "CREATE TABLE `{table_name}` ("
         "  `summary_id` varchar(255) NOT NULL,"
@@ -64,10 +71,10 @@ def create_application_tables():
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-            table_name=table_summary,
-            housing_type_table=table_housing_type,
-            housing_type_id="housing_type_id"
-        )
+        table_name=table_summary,
+        housing_type_table=table_housing_type,
+        housing_type_id="housing_type_id"
+    )
     tables[table_date_zhvi] = (
         "CREATE TABLE `{table_name}` ("
         "  `date_zhvi_id` int NOT NULL AUTO_INCREMENT,"
@@ -79,10 +86,10 @@ def create_application_tables():
         "  FOREIGN KEY (`{location_id}`) "
         "  REFERENCES `{table_locations}` (`{location_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-            table_name=table_date_zhvi,
-            table_locations=table_locations,
-            location_id="location_id"
-        )
+        table_name=table_date_zhvi,
+        table_locations=table_locations,
+        location_id="location_id"
+    )
     tables[table_locations] = (
         "CREATE TABLE `{table_name}` ("
         "  `location_id` int NOT NULL AUTO_INCREMENT,"
@@ -97,10 +104,10 @@ def create_application_tables():
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-            table_name=table_locations,
-            housing_type_table=table_housing_type,
-            housing_type_id="housing_type_id"
-        )
+        table_name=table_locations,
+        housing_type_table=table_housing_type,
+        housing_type_id="housing_type_id"
+    )
     for table_name in tables:
         table_description = tables[table_name]
         try:
@@ -277,26 +284,32 @@ def insert_housing_data(rows, header_row, data_type):
         logging.exception(err)
 
 
-# def get_zillow_data():
-#     connection = get_connection()
-#     cursor = connection.cursor()
-#     rows = []
-#     try:
-#         get_location_data = ("SELECT * FROM {table_name} "
-#                              "WHERE region_name={region_name} "
-#                              "AND WHERE housing_type_id=housing_type_id"
-#                              "LIMIT 1").format(
-#             table_name=table_locations,
-#             region_name=region_name,
-#             housing_type_id=housing_type_id
-#         )
-#         cursor.execute(get_location_data)
-#         if cursor.rowcount > 0:
-#             location = cursor.fetchone()
-#     except mysql.connector.Error as err:
-#         logging.exception(err.msg)
-#     except Exception as err:
-#         logging.exception(err)
-#     close_connection_or_cursor(cursor)
-#     close_connection_or_cursor(connection)
-#     return rows
+def get_zillow_data(limit=10000, config=None):
+    # currently not ready for production without passing in a limit
+    data = []
+    try:
+        connection = get_connection(config)
+        cursor = connection.cursor()
+        get_location_data = (
+            "SELECT {location_table}.region_name, {housing_type_table}.housing_type, {location_table}.state, "
+            "{location_table}.city, {location_table}.metro, {location_table}.county, {date_zhvi_table}.date, "
+            "{date_zhvi_table}.zhvi "
+            "FROM {date_zhvi_table} "
+            "INNER JOIN {location_table} ON {date_zhvi_table}.location_id={location_table}.location_id "
+            "INNER JOIN {housing_type_table} ON {location_table}.housing_type_id={housing_type_table}.housing_type_id "
+            "LIMIT {limit}"
+        ).format(
+            location_table=table_locations,
+            housing_type_table=table_housing_type,
+            date_zhvi_table=table_date_zhvi,
+            limit=limit
+        )
+        cursor.execute(get_location_data)
+        data = cursor.fetchall()
+        close_connection_or_cursor(cursor)
+        close_connection_or_cursor(connection)
+    except mysql.connector.Error as err:
+        logging.exception(err.msg)
+    except Exception as err:
+        logging.exception(err)
+    return data

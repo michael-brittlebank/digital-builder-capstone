@@ -12,24 +12,27 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     """
     default_groupby = [zillow_column_region_name, custom_column_housing_type]
 
-    # todo, replace with db call
-    raw_condo_data = import_csv("ingested_condo.csv")
-    raw_sfr_data = import_csv("ingested_singlefamilyresidence.csv")
+    # raw_zillow_data = mysql_zillow.get_zillow_data() # db call
+
+    raw_condo_data = import_csv("ingested-condo.csv", [file_path, file_export_path, file_export_path_testing])
+    # raw_sfr_data = import_csv("ingested-singlefamilyresidence.csv", file_export_path_testing)
 
     # convert data to dataframes and merge together
+    # headers = [zillow_column_region_name, custom_column_housing_type, zillow_column_state, zillow_column_city,
+    #            zillow_column_metro, zillow_column_county_name, custom_column_date, custom_column_zhvi]
     conda_data = get_dataframe_from_list(raw_condo_data)
-    sfr_data = get_dataframe_from_list(raw_sfr_data)
-    base_dataframe = pd.concat([conda_data, sfr_data])
-
-    # temp while reading from file
-    base_dataframe[custom_column_zhvi] = base_dataframe[custom_column_zhvi].astype(float)  # cast string to float
+    # sfr_data = get_dataframe_from_list(raw_sfr_data)
+    base_dataframe = pd.concat([conda_data])
 
     # massage data in dataframes
+    base_dataframe[custom_column_zhvi] = base_dataframe[custom_column_zhvi].astype(float)  # cast string to float
     base_dataframe[custom_column_date] = pd.to_datetime(base_dataframe[custom_column_date])  # convert to pandas date
-    base_dataframe[custom_column_zhvi] = base_dataframe[custom_column_zhvi].replace([0],
-                                                                                    np.nan)  # replace zero ZHVI with NAN to exclude from calculations
-    base_dataframe.sort_values(
-        by=[custom_column_date])  # sorting the data allows for percent change to be calculated correctly
+
+    # # convert data to dataframes
+
+    # massage data in dataframes
+    base_dataframe[custom_column_zhvi] = base_dataframe[custom_column_zhvi].replace([0], np.nan)  # replace zero ZHVI with NAN to exclude from calculations
+    base_dataframe.sort_values(by=[custom_column_date])  # sorting the data allows for percent change to be calculated correctly
 
     # calculate first valid zhvi value per row
     first_valid_dataframe = base_dataframe.pivot(index=default_groupby, columns=custom_column_date,
@@ -44,39 +47,29 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
     if is_only_amfam_data:
         summary_dataframe = filter_dataframe_by_amfam_states(summary_dataframe)
 
-    # columns
-    zhvi_start = base_dataframe.groupby(default_groupby)[
+    summary_dataframe[custom_column_zhvi_start] = base_dataframe.groupby(default_groupby)[
         custom_column_zhvi].first()
-    zhvi_end = base_dataframe.groupby(default_groupby)[
-        custom_column_zhvi].last()
-    zhvi_min = base_dataframe.groupby(default_groupby)[custom_column_zhvi].min()
-    zhvi_max = base_dataframe.groupby(default_groupby)[custom_column_zhvi].max()
-
-    # format currencies
-    if not is_raw_data:
-        zhvi_start = zhvi_start.apply(currency_formatter)
-        zhvi_end = zhvi_end.apply(currency_formatter)
-        zhvi_min = zhvi_min.apply(currency_formatter)
-        zhvi_max = zhvi_max.apply(currency_formatter)
-
-    summary_dataframe[custom_column_zhvi_start] = zhvi_start
     summary_dataframe[custom_column_start_date] = first_valid_zhvi
-    summary_dataframe[custom_column_zhvi_end] = zhvi_end
+    summary_dataframe[custom_column_zhvi_end] = base_dataframe.groupby(default_groupby)[
+        custom_column_zhvi].last()
     summary_dataframe[custom_column_end_date] = base_dataframe.groupby(default_groupby)[custom_column_date].last()
-    summary_dataframe['ZHVI Min'] = zhvi_min
-    summary_dataframe['ZHVI Max'] = zhvi_max
+    summary_dataframe[custom_column_zhvi_min] = base_dataframe.groupby(default_groupby)[custom_column_zhvi].min()
+    summary_dataframe[custom_column_zhvi_max] = base_dataframe.groupby(default_groupby)[custom_column_zhvi].max()
     summary_dataframe[custom_column_years_difference] = round(
         (summary_dataframe[custom_column_end_date] - summary_dataframe[custom_column_start_date]).dt.days / 365,
         1)  # estimate years from number of days between start and end
     summary_dataframe[custom_column_appreciation] = summary_dataframe.apply(
         lambda row: get_home_appreciation_percentage_per_year(row[custom_column_zhvi_start],
                                                               row[custom_column_zhvi_end],
-                                                              row[custom_column_years_difference],
-                                                              is_raw_data), axis=1)
+                                                              row[custom_column_years_difference]), axis=1)
     summary_dataframe = summary_dataframe.sort_values(custom_column_appreciation,
                                                       ascending=False)  # sort table to find highest movers
     # format percentages
     if not is_raw_data:
         summary_dataframe[custom_column_appreciation] = summary_dataframe[custom_column_appreciation].apply(
             percent_formatter)
+        summary_dataframe[custom_column_zhvi_start] = summary_dataframe[custom_column_zhvi_start].apply(currency_formatter)
+        summary_dataframe[custom_column_zhvi_end] = summary_dataframe[custom_column_zhvi_end].apply(currency_formatter)
+        summary_dataframe[custom_column_zhvi_min] = summary_dataframe[custom_column_zhvi_min].apply(currency_formatter)
+        summary_dataframe[custom_column_zhvi_max] = summary_dataframe[custom_column_zhvi_max].apply(currency_formatter)
     return summary_dataframe

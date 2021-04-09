@@ -5,7 +5,7 @@ import atexit
 import os
 import logging
 
-logging.basicConfig(filename='app.log', level=logging.INFO, force=True)
+logging.basicConfig(filename='app.log', level=logging.INFO, force=True, datefmt='%Y-%m-%d %H:%M:%S')
 
 from modules.enums.env import env_flask_debug_mode
 
