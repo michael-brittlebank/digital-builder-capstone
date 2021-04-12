@@ -316,8 +316,14 @@ def insert_housing_data(rows, header_row, data_type):
         logging.exception(err)
 
 
-def get_baseline_data(is_only_amfam_data, config=None):
+def get_baseline_data(is_only_amfam_data, housing_type_id, config=None):
     data = []
+    amfam_operating_states_condition = ""
+    if is_only_amfam_data:
+        amfam_operating_states_condition = "AND {location_table}.{column_state} IN('{amfam_territory_states}')".format(
+            location_table=table_locations,
+            column_state=column_state,
+            amfam_territory_states="','".join(amfam_territory_states))
     try:
         connection = get_connection(config)
         cursor = connection.cursor(dictionary=True)
@@ -331,7 +337,9 @@ def get_baseline_data(is_only_amfam_data, config=None):
             "column_location_id} "
             " INNER JOIN {housing_type_table} ON {location_table}.{column_housing_type_id}={housing_type_table}.{"
             "column_housing_type_id}"
-            " WHERE {location_table}.{column_housing_type_id} = 1 AND {column_date_difference} > {min_years_data}"
+            " WHERE {location_table}.{column_housing_type_id} = {housing_type_id}"
+            " AND {column_date_difference} > {min_years_data}"
+            " {amfam_operating_states_condition}"
             " ORDER BY {column_zhvi_percent_change} DESC"
             " LIMIT 25"
         ).format(
@@ -354,7 +362,9 @@ def get_baseline_data(is_only_amfam_data, config=None):
             column_date_start=column_date_start,
             column_date_end=column_date_end,
             column_date_difference=column_date_difference,
-            min_years_data=5  # at least 5 years of records are required for proper comparison
+            min_years_data=5,  # at least 5 years of records are required for proper comparison
+            housing_type_id=housing_type_id,
+            amfam_operating_states_condition=amfam_operating_states_condition
         )
         cursor.execute(get_location_data)
         data = cursor.fetchall()
