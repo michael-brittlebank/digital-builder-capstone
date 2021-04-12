@@ -53,11 +53,13 @@ def create_application_tables():
     tables = {}
     tables[table_housing_type] = (
         "CREATE TABLE `{table_name}` ("
-        "  `housing_type_id` int NOT NULL AUTO_INCREMENT,"
-        "  `housing_type` varchar(255) NOT NULL UNIQUE,"
-        "  PRIMARY KEY (`housing_type_id`)"
+        "  `{column_housing_type_id}` int NOT NULL AUTO_INCREMENT,"
+        "  `{column_housing_type}` varchar(255) NOT NULL UNIQUE,"
+        "  PRIMARY KEY (`{column_housing_type_id}`)"
         ") ENGINE=InnoDB").format(
-        table_name=table_housing_type
+        table_name=table_housing_type,
+        column_housing_type_id=column_housing_type_id,
+        column_housing_type=column_housing_type
     )
     tables[table_date_zhvi] = (
         "CREATE TABLE `{table_name}` ("
@@ -80,20 +82,23 @@ def create_application_tables():
         "CREATE TABLE `{table_name}` ("
         "  `{column_location_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{housing_type_id}` int NOT NULL,"
-        "  `region_name` int NOT NULL,"
-        "  `state` varchar(2) NOT NULL,"
-        "  `city` varchar(255) NOT NULL,"
+        "  `{column_region_name}` int NOT NULL,"
+        "  `{column_state}` varchar(2) NOT NULL,"
+        "  `{column_city}` varchar(255) NOT NULL,"
         "  `metro` varchar(255) NOT NULL,"
         "  `county` varchar(255) NOT NULL,"
         "  PRIMARY KEY (`{column_location_id}`),"
-        "  UNIQUE KEY (`region_name`,`{housing_type_id}`), KEY `housing_type_id` (`housing_type_id`),"
+        "  UNIQUE KEY (`{column_region_name}`,`{housing_type_id}`), KEY `housing_type_id` (`housing_type_id`),"
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
         table_name=table_locations,
         housing_type_table=table_housing_type,
         column_location_id=column_location_id,
-        housing_type_id="housing_type_id"
+        housing_type_id=column_housing_type_id,
+        column_region_name=column_region_name,
+        column_state=column_state,
+        column_city=column_city
     )
     tables[table_calculations] = (
         "CREATE TABLE `{table_name}` ("
@@ -144,9 +149,10 @@ def populate_housing_types():
     connection = get_connection()
     cursor = connection.cursor()
     add_housing_type = ("INSERT INTO {table_name} "
-                        "(housing_type) "
+                        "({column_housing_type}) "
                         "VALUES (%s)").format(
-        table_name=table_housing_type
+        table_name=table_housing_type,
+        column_housing_type=column_housing_type
     )
     for housing_type in zillow_data_housing_types:
         try:
@@ -170,12 +176,14 @@ def get_location_by_region_name_and_housing_type(region_name, housing_type_id):
     location = None
     try:
         get_location_data = ("SELECT * FROM {table_name} "
-                             "WHERE region_name={region_name} "
-                             "AND WHERE housing_type_id=housing_type_id "
+                             "WHERE {column_region_name}={region_name} "
+                             "AND WHERE {column_housing_type_id}={housing_type_id} "
                              "LIMIT 1").format(
             table_name=table_locations,
             region_name=region_name,
-            housing_type_id=housing_type_id
+            housing_type_id=housing_type_id,
+            column_region_name=column_region_name,
+            column_housing_type_id=column_housing_type_id
         )
         cursor.execute(get_location_data)
         if cursor.rowcount > 0:
@@ -195,10 +203,11 @@ def get_housing_type_by_name(housing_type_name):
     housing_type = None
     try:
         get_location_data = ("SELECT * FROM {table_name} "
-                             "WHERE housing_type='{housing_type}' "
+                             "WHERE {column_housing_type}='{housing_type}' "
                              "LIMIT 1").format(
             table_name=table_housing_type,
-            housing_type=housing_type_name
+            housing_type=housing_type_name,
+            column_housing_type=column_housing_type
         )
         cursor.execute(get_location_data)
         if cursor.rowcount > 0:
@@ -228,10 +237,14 @@ def insert_location(data, header_row, housing_type_id):
             county=data[header_row.index(zillow_column_county_name)]
         )
         insert_location_data = ("INSERT INTO {table_name} "
-                                "(housing_type_id, region_name, state, city, metro, county) "
+                                "({column_housing_type_id}, {column_region_name}, {column_state}, {column_city}, metro, county) "
                                 "VALUES {values}").format(
             table_name=table_locations,
-            values=values
+            values=values,
+            column_region_name=column_region_name,
+            column_housing_type_id=column_housing_type_id,
+            column_state=column_state,
+            column_city=column_city
         )
         cursor.execute(insert_location_data)
         # Make sure data is committed to the database
@@ -303,27 +316,45 @@ def insert_housing_data(rows, header_row, data_type):
         logging.exception(err)
 
 
-def get_zillow_data(limit=10000, config=None):
-    # currently not ready for production without passing in a limit
+def get_baseline_data(is_only_amfam_data, config=None):
     data = []
     try:
         connection = get_connection(config)
-        cursor = connection.cursor()
+        cursor = connection.cursor(dictionary=True)
         get_location_data = (
-            "SELECT {location_table}.region_name, {housing_type_table}.housing_type, {location_table}.state, "
-            "{location_table}.city, {location_table}.metro, {location_table}.county, {date_zhvi_table}.{column_date}, "
-            "{date_zhvi_table}.{column_zhvi} "
-            "FROM {date_zhvi_table} "
-            "INNER JOIN {location_table} ON {date_zhvi_table}.{column_location_id}={location_table}.{column_location_id} "
-            "INNER JOIN {housing_type_table} ON {location_table}.housing_type_id={housing_type_table}.housing_type_id "
-            "LIMIT {limit}"
+            "SELECT {location_table}.{column_region_name}, {housing_type_table}.{column_housing_type}, "
+            "{location_table}.{column_state}, {location_table}.{column_city}, {column_zhvi_start}, "
+            "{column_zhvi_end}, {column_zhvi_min}, {column_zhvi_max}, {column_date_start}, {column_date_end}, "
+            "{column_date_difference}, {column_zhvi_percent_change} "
+            " FROM {calculations_table}"
+            " INNER JOIN {location_table} ON {calculations_table}.{column_location_id}={location_table}.{"
+            "column_location_id} "
+            " INNER JOIN {housing_type_table} ON {location_table}.{column_housing_type_id}={housing_type_table}.{"
+            "column_housing_type_id}"
+            " WHERE {location_table}.{column_housing_type_id} = 1 AND {column_date_difference} > {min_years_data}"
+            " ORDER BY {column_zhvi_percent_change} DESC"
+            " LIMIT 25"
         ).format(
+            calculations_table=table_calculations,
             location_table=table_locations,
             housing_type_table=table_housing_type,
             date_zhvi_table=table_date_zhvi,
+            column_region_name=column_region_name,
+            column_state=column_state,
+            column_city=column_city,
             column_location_id=column_location_id,
             column_zhvi=column_zhvi,
-            limit=limit
+            column_housing_type_id=column_housing_type_id,
+            column_housing_type=column_housing_type,
+            column_zhvi_percent_change=column_zhvi_percent_change,
+            column_zhvi_start=column_zhvi_start,
+            column_zhvi_end=column_zhvi_end,
+            column_zhvi_min=column_zhvi_min,
+            column_zhvi_max=column_zhvi_max,
+            column_date_start=column_date_start,
+            column_date_end=column_date_end,
+            column_date_difference=column_date_difference,
+            min_years_data=5  # at least 5 years of records are required for proper comparison
         )
         cursor.execute(get_location_data)
         data = cursor.fetchall()
