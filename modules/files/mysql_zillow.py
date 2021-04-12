@@ -1,12 +1,13 @@
+import json
+
 import mysql.connector
 from mysql.connector import connect, Error, errorcode, pooling
 import logging
 import os
 import datetime
-import pandas as pd
-import pandas.io.sql as pds
 
 from modules.enums import *
+from ..data.baseline import calculate_baseline_data
 
 _connection_pool = None
 
@@ -42,7 +43,8 @@ def get_connection(config=None):
 
 
 def close_connection_or_cursor(connection_cursor):
-    connection_cursor.close()
+    if connection_cursor is not None:
+        connection_cursor.close()
 
 
 def create_application_tables():
@@ -57,56 +59,70 @@ def create_application_tables():
         ") ENGINE=InnoDB").format(
         table_name=table_housing_type
     )
-    tables[table_summary] = (
-        "CREATE TABLE `{table_name}` ("
-        "  `summary_id` varchar(255) NOT NULL,"
-        "  `{housing_type_id}` int NOT NULL,"
-        "  `percent_min` double NOT NULL,"
-        "  `percent_max` double NOT NULL,"
-        "  `percent_average` double NOT NULL,"
-        "  `years_min` double NOT NULL,"
-        "  `years_max` double NOT NULL,"
-        "  `years_average` double NOT NULL,"
-        "  PRIMARY KEY (`summary_id`),"
-        "  FOREIGN KEY (`{housing_type_id}`) "
-        "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
-        ") ENGINE=InnoDB").format(
-        table_name=table_summary,
-        housing_type_table=table_housing_type,
-        housing_type_id="housing_type_id"
-    )
     tables[table_date_zhvi] = (
         "CREATE TABLE `{table_name}` ("
         "  `date_zhvi_id` int NOT NULL AUTO_INCREMENT,"
-        "  `{location_id}` int NOT NULL,"
-        "  `date` datetime NOT NULL,"
-        "  `zhvi` int NOT NULL,"
+        "  `{column_location_id}` int NOT NULL,"
+        "  `{column_date}` datetime NOT NULL,"
+        "  `{column_zhvi}` int NOT NULL,"
         "  PRIMARY KEY (`date_zhvi_id`),"
-        "  UNIQUE KEY (`date`,`{location_id}`), KEY `location_id` (`location_id`),"
-        "  FOREIGN KEY (`{location_id}`) "
-        "  REFERENCES `{table_locations}` (`{location_id}`) ON DELETE CASCADE"
+        "  UNIQUE KEY (`{column_date}`,`{column_location_id}`), KEY `location_id` (`{column_location_id}`),"
+        "  FOREIGN KEY (`{column_location_id}`) "
+        "  REFERENCES `{table_locations}` (`{column_location_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
         table_name=table_date_zhvi,
         table_locations=table_locations,
-        location_id="location_id"
+        column_location_id=column_location_id,
+        column_zhvi=column_zhvi,
+        column_date=column_date
     )
     tables[table_locations] = (
         "CREATE TABLE `{table_name}` ("
-        "  `location_id` int NOT NULL AUTO_INCREMENT,"
+        "  `{column_location_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{housing_type_id}` int NOT NULL,"
         "  `region_name` int NOT NULL,"
         "  `state` varchar(2) NOT NULL,"
         "  `city` varchar(255) NOT NULL,"
         "  `metro` varchar(255) NOT NULL,"
         "  `county` varchar(255) NOT NULL,"
-        "  PRIMARY KEY (`location_id`),"
+        "  PRIMARY KEY (`{column_location_id}`),"
         "  UNIQUE KEY (`region_name`,`{housing_type_id}`), KEY `housing_type_id` (`housing_type_id`),"
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
         table_name=table_locations,
         housing_type_table=table_housing_type,
+        column_location_id=column_location_id,
         housing_type_id="housing_type_id"
+    )
+    tables[table_calculations] = (
+        "CREATE TABLE `{table_name}` ("
+        "  `calculation_id` int NOT NULL AUTO_INCREMENT,"
+        "  `{column_location_id}` int NOT NULL,"
+        "  `{column_zhvi_start}` int NOT NULL,"
+        "  `{column_zhvi_end}` int NOT NULL,"
+        "  `{column_zhvi_min}` int NOT NULL,"
+        "  `{column_zhvi_max}` int NOT NULL,"
+        "  `{column_date_start}` datetime NOT NULL,"
+        "  `{column_date_end}` datetime NOT NULL,"
+        "  `{column_date_difference}` double NOT NULL,"
+        "  `{column_zhvi_percent_change}` double NOT NULL,"
+        "  PRIMARY KEY (`calculation_id`),"
+        "  UNIQUE KEY (`{column_location_id}`), KEY `column_location_id` (`{column_location_id}`),"
+        "  FOREIGN KEY (`{column_location_id}`)"
+        "  REFERENCES `{location_table}` (`{column_location_id}`) ON DELETE CASCADE"
+        ") ENGINE=InnoDB").format(
+        table_name=table_calculations,
+        location_table=table_locations,
+        column_location_id=column_location_id,
+        column_zhvi_start=column_zhvi_start,
+        column_zhvi_end=column_zhvi_end,
+        column_zhvi_min=column_zhvi_min,
+        column_zhvi_max=column_zhvi_max,
+        column_date_start=column_date_start,
+        column_date_end=column_date_end,
+        column_date_difference=column_date_difference,
+        column_zhvi_percent_change=column_zhvi_percent_change
     )
     for table_name in tables:
         table_description = tables[table_name]
@@ -264,9 +280,12 @@ def insert_housing_data(rows, header_row, data_type):
             )
         add_housing_data = (
             ("INSERT INTO {table_name} "
-             "(location_id, date, zhvi) "
+             "({column_location_id}, {column_date}, {column_zhvi}) "
              "VALUES {values}").format(
                 table_name=table_date_zhvi,
+                column_location_id=column_location_id,
+                column_zhvi=column_zhvi,
+                column_date=column_date,
                 values=",".join(values)
             )
         )
@@ -292,16 +311,18 @@ def get_zillow_data(limit=10000, config=None):
         cursor = connection.cursor()
         get_location_data = (
             "SELECT {location_table}.region_name, {housing_type_table}.housing_type, {location_table}.state, "
-            "{location_table}.city, {location_table}.metro, {location_table}.county, {date_zhvi_table}.date, "
-            "{date_zhvi_table}.zhvi "
+            "{location_table}.city, {location_table}.metro, {location_table}.county, {date_zhvi_table}.{column_date}, "
+            "{date_zhvi_table}.{column_zhvi} "
             "FROM {date_zhvi_table} "
-            "INNER JOIN {location_table} ON {date_zhvi_table}.location_id={location_table}.location_id "
+            "INNER JOIN {location_table} ON {date_zhvi_table}.{column_location_id}={location_table}.{column_location_id} "
             "INNER JOIN {housing_type_table} ON {location_table}.housing_type_id={housing_type_table}.housing_type_id "
             "LIMIT {limit}"
         ).format(
             location_table=table_locations,
             housing_type_table=table_housing_type,
             date_zhvi_table=table_date_zhvi,
+            column_location_id=column_location_id,
+            column_zhvi=column_zhvi,
             limit=limit
         )
         cursor.execute(get_location_data)
@@ -313,3 +334,98 @@ def get_zillow_data(limit=10000, config=None):
     except Exception as err:
         logging.exception(err)
     return data
+
+
+def get_locations():
+    connection = get_connection()
+    cursor = connection.cursor(buffered=True)
+    location = None
+    try:
+        get_locations_data = "SELECT * FROM {table_name}".format(
+            table_name=table_locations,
+        )
+        cursor.execute(get_locations_data)
+        if cursor.rowcount > 0:
+            location = cursor.fetchone()
+    except mysql.connector.Error as err:
+        logging.exception(err.msg)
+    except Exception as err:
+        logging.exception(err)
+    close_connection_or_cursor(cursor)
+    close_connection_or_cursor(connection)
+    return location
+
+
+def calculate_metrics(config=None):
+    try:
+        location_connection = get_connection(config)
+        location_cursor = location_connection.cursor(dictionary=True)
+        date_zhvi_connection = get_connection(config)
+        date_zhvi_cursor = date_zhvi_connection.cursor(dictionary=True)
+        calculation_connection = get_connection(config)
+        calculation_cursor = calculation_connection.cursor()
+        # select locations
+        get_locations_data = "SELECT {column_location_id} FROM {table_name} WHERE location_id=4 LIMIT 1".format(
+            table_name=table_locations,
+            column_location_id=column_location_id
+        )
+        location_cursor.execute(get_locations_data)
+        for location in location_cursor:
+            location_id = location[column_location_id]
+            # for each location get all date_zhvi records
+            get_locations_data = ("SELECT {column_date}, {column_zhvi} FROM {table_name} "
+                                  "WHERE {column_location_id}={location_id}").format(
+                table_name=table_date_zhvi,
+                column_location_id=column_location_id,
+                location_id=location_id,
+                column_date=column_date,
+                column_zhvi=column_zhvi
+            )
+            date_zhvi_cursor.execute(get_locations_data)
+            summary_data = calculate_baseline_data(date_zhvi_cursor.fetchall())
+            values = ("({column_location_id},{column_zhvi_start},{column_zhvi_end},'{column_date_start}',"
+                      "'{column_date_end}',{column_zhvi_min},{column_zhvi_max},{column_date_difference},"
+                      "{column_zhvi_percent_change})").format(
+                column_location_id=location_id,
+                column_zhvi_start=summary_data[custom_column_zhvi_start],
+                column_zhvi_end=summary_data[custom_column_zhvi_end],
+                column_date_start=summary_data[custom_column_start_date],
+                column_date_end=summary_data[custom_column_end_date],
+                column_zhvi_min=summary_data[custom_column_zhvi_max],
+                column_zhvi_max=summary_data[custom_column_zhvi_min],
+                column_date_difference=summary_data[custom_column_years_difference],
+                column_zhvi_percent_change=summary_data[custom_column_appreciation]
+            )
+            insert_calculation_data = ("INSERT INTO {table_name} "
+                                       "({column_location_id},{column_zhvi_start},{column_zhvi_end},"
+                                       "{column_date_start},{column_date_end},{column_zhvi_min},{column_zhvi_max},"
+                                       "{column_date_difference},{column_zhvi_percent_change}) "
+                                       "VALUES {values}").format(
+                table_name=table_calculations,
+                values=values,
+                column_location_id=column_location_id,
+                column_zhvi_start=column_zhvi_start,
+                column_zhvi_end=column_zhvi_end,
+                column_date_start=column_date_start,
+                column_date_end=column_date_end,
+                column_zhvi_min=column_zhvi_min,
+                column_zhvi_max=column_zhvi_max,
+                column_date_difference=column_date_difference,
+                column_zhvi_percent_change=column_zhvi_percent_change
+            )
+            calculation_cursor.execute(insert_calculation_data)
+            # Make sure data is committed to the database
+            calculation_connection.commit()
+        close_connection_or_cursor(location_cursor)
+        close_connection_or_cursor(location_connection)
+        close_connection_or_cursor(date_zhvi_cursor)
+        close_connection_or_cursor(date_zhvi_connection)
+        close_connection_or_cursor(calculation_cursor)
+        close_connection_or_cursor(calculation_connection)
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_DUP_ENTRY:
+            logging.info("Metric already exists.")
+        else:
+            logging.exception(err.msg)
+    except Exception as err:
+        logging.exception(err)
