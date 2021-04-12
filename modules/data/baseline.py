@@ -3,14 +3,14 @@ from ._helpers import *
 from ..enums import *
 
 
-def return_baseline_data(is_only_amfam_data, is_raw_data):
+def get_baseline_data(is_only_amfam_data, is_raw_data):
     """
     get_baseline_data translates csv files into analysable files
     :param is_only_amfam_data: boolean for whether to return data in amfam's operating states or all states
     :param is_raw_data: boolean for whether to return formatted data or not
     :return: list of baseline data
     """
-    raw_baseline_data = mysql_zillow.get_baseline_data(is_only_amfam_data) # db call
+    raw_baseline_data = mysql_zillow.select_baseline_data(is_only_amfam_data) # db call
 
     header_mappings = {column_date: custom_column_date, column_zhvi: custom_column_zhvi}
 

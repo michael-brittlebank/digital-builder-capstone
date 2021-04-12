@@ -39,7 +39,7 @@ class IngestClass(Resource):
 class PopulateClass(Resource):
     def post(self):
         create_application_tables()
-        populate_housing_types()
+        insert_housing_types()
         return make_response('', 204)
 
 

@@ -1,5 +1,3 @@
-import json
-
 import mysql.connector
 from mysql.connector import connect, Error, errorcode, pooling
 import logging
@@ -31,7 +29,7 @@ def get_connection(config=None):
             # check to ensure tables exist
             create_application_tables()
             # populate tables as needed
-            populate_housing_types()
+            insert_housing_types()
         except Error as e:
             logging.exception(e)
     try:
@@ -145,7 +143,7 @@ def create_application_tables():
     close_connection_or_cursor(connection)
 
 
-def populate_housing_types():
+def insert_housing_types():
     connection = get_connection()
     cursor = connection.cursor()
     add_housing_type = ("INSERT INTO {table_name} "
@@ -170,7 +168,7 @@ def populate_housing_types():
     close_connection_or_cursor(connection)
 
 
-def get_location_by_region_name_and_housing_type(region_name, housing_type_id):
+def select_location_by_region_name_and_housing_type(region_name, housing_type_id):
     connection = get_connection()
     cursor = connection.cursor(buffered=True)
     location = None
@@ -197,7 +195,7 @@ def get_location_by_region_name_and_housing_type(region_name, housing_type_id):
     return location
 
 
-def get_housing_type_by_name(housing_type_name):
+def select_housing_type_by_name(housing_type_name):
     connection = get_connection()
     cursor = connection.cursor(buffered=True)
     housing_type = None
@@ -266,13 +264,13 @@ def insert_housing_data(rows, header_row, data_type):
     add_housing_data = ""
     try:
         # get housing type id
-        housing_type = get_housing_type_by_name(data_type)
+        housing_type = select_housing_type_by_name(data_type)
         housing_type_id = housing_type[0]
 
         location_data = rows[0]  # assume only one location will be sent in a batch
         region_name = location_data[header_row.index(zillow_column_region_name)]
         # get location id
-        location = get_location_by_region_name_and_housing_type(region_name, housing_type_id)
+        location = select_location_by_region_name_and_housing_type(region_name, housing_type_id)
         # insert location if doesn't exist
         if not location:
             location_id = insert_location(location_data, header_row, housing_type_id)
@@ -316,7 +314,7 @@ def insert_housing_data(rows, header_row, data_type):
         logging.exception(err)
 
 
-def get_baseline_data(is_only_amfam_data, housing_type_id, config=None):
+def select_baseline_data(is_only_amfam_data, housing_type_id, config=None):
     data = []
     amfam_operating_states_condition = ""
     if is_only_amfam_data:
@@ -377,7 +375,7 @@ def get_baseline_data(is_only_amfam_data, housing_type_id, config=None):
     return data
 
 
-def get_locations():
+def select_locations():
     connection = get_connection()
     cursor = connection.cursor(buffered=True)
     location = None
