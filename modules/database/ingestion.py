@@ -50,7 +50,7 @@ def insert_housing_data(rows, header_row, data_type):
             )
         )
         cursor.execute(add_housing_data)
-        # Make sure data is committed to the mysql_database
+        # Make sure data is committed to the database
         connection.commit()
         close_connection_or_cursor(cursor)
         close_connection_or_cursor(connection)

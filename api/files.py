@@ -3,7 +3,7 @@ import os
 from flask import make_response
 from flask_restx import Namespace, reqparse, Resource
 from modules.files import *
-from modules.mysql_database import create_application_tables, insert_housing_types, calculate_metrics
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics
 
 api = Namespace('files', description='File related operations', validate=True)
 

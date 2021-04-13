@@ -18,7 +18,7 @@ def insert_housing_types():
     for housing_type in zillow_data_housing_types:
         try:
             cursor.execute(add_housing_type, (housing_type,))
-            # Make sure data is committed to the mysql_database
+            # Make sure data is committed to the database
             connection.commit()
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_DUP_ENTRY:

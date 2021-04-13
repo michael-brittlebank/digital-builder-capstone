@@ -2,7 +2,7 @@ import copy
 import pandas as pd
 
 from ..enums import *
-from ..mysql_database import insert_housing_data
+from ..database import insert_housing_data
 
 
 def ingest_zillow_data(raw_data, data_type):

@@ -59,7 +59,7 @@ def insert_location(data, header_row, housing_type_id):
             column_city=column_city
         )
         cursor.execute(insert_location_data)
-        # Make sure data is committed to the mysql_database
+        # Make sure data is committed to the database
         connection.commit()
         location_id = cursor.lastrowid
     except mysql.connector.Error as err:

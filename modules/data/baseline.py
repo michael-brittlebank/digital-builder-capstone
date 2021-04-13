@@ -4,7 +4,7 @@ from ._helpers import percent_formatter, double_formatter
 
 
 def get_baseline_data(is_only_amfam_data, housing_type_name, is_raw_data):
-    from ..mysql_database import select_housing_type_by_name, select_baseline_data
+    from ..database import select_housing_type_by_name, select_baseline_data
 
     # get housing type id
     housing_type = select_housing_type_by_name(housing_type_name)

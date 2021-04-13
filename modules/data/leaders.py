@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ._helpers import percent_formatter, currency_formatter
-from ..mysql_database import *
+from ..database import *
 
 
 def get_leaders_data(is_only_amfam_data, housing_type_name, is_raw_data):

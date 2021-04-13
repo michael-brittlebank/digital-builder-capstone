@@ -66,7 +66,7 @@ def calculate_metrics(config=None):
                     column_zhvi_percent_change=column_zhvi_percent_change
                 )
                 calculation_cursor.execute(insert_calculation_data)
-                # Make sure data is committed to the mysql_database
+                # Make sure data is committed to the database
                 calculation_connection.commit()
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_DUP_ENTRY:
