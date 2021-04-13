@@ -1,6 +1,7 @@
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
-from modules.data import *
+from modules.enums import *
+from modules.data import get_baseline_data, get_leaders_data
 
 api = Namespace('data', description='Data related operations', validate=True)
 
@@ -51,4 +52,4 @@ class ForecastClass(Resource):
         raw_data = args[arg_baseline_raw_data]
         housing_type = args[arg_housing_type]
         data = get_leaders_data(amfam_data_only, housing_type, raw_data)
-        return make_response(data, 200, headers)
+        return make_response(data.head(25).to_csv(), 200, headers)

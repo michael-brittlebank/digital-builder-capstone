@@ -92,3 +92,14 @@ def get_zhvi_weighted_average():
     data = data.sort_values("Weighted Std Var", ascending=False)  # sort by weighted variance
     data.head(10)
     return False
+
+
+def double_formatter(value):
+    """
+    percent_formatter formats float to percent string
+    :param value: float to format
+    :return: string
+    """
+    if value == np.NaN or value is None:
+        value = 0
+    return "{:.2f}".format(value)

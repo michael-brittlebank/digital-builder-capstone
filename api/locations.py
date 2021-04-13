@@ -1,5 +1,6 @@
 from flask_restx import Namespace, reqparse, Resource
-from modules.locations import *
+from modules.enums import *
+from modules.locations import get_amfam_locations_by_zipcode
 
 api = Namespace('locations', description='Locations related operations', validate=True)
 

@@ -2,7 +2,7 @@ import copy
 import pandas as pd
 
 from ..enums import *
-from ..files import mysql_zillow
+from ..mysql_database import insert_housing_data
 
 
 def ingest_zillow_data(raw_data, data_type):
@@ -24,7 +24,7 @@ def ingest_zillow_data(raw_data, data_type):
         normalised_row = normalise_zillow_row(row)
         inflated_rows = inflate_zillow_row_by_date(normalised_row, original_header, data_type)
         filtered_data += inflated_rows
-        mysql_zillow.insert_housing_data(inflated_rows, header_row, data_type)
+        insert_housing_data(inflated_rows, header_row, data_type)
     return [header_row] + filtered_data
 
 

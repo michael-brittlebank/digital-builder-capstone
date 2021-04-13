@@ -1,26 +1,38 @@
-from ._helpers import *
+import pandas as pd
 from ..enums import *
+from ._helpers import percent_formatter, double_formatter
 
 
-def get_baseline_data(is_only_amfam_data, housing_type, is_raw_data):
-    """
-    get_baseline_data translates csv files into analysable files
-    :param is_only_amfam_data: boolean for whether to return data in amfam's operating states or all states
-    :param is_raw_data: boolean for whether to return formatted data or not
-    :return: list of baseline data
-    """
+def get_baseline_data(is_only_amfam_data, housing_type_name, is_raw_data):
+    from ..mysql_database import select_housing_type_by_name, select_baseline_data
+
+    # get housing type id
+    housing_type = select_housing_type_by_name(housing_type_name)
+    housing_type_id = housing_type[column_housing_type_id]
+
+    # db call
+    raw_data = select_baseline_data(is_only_amfam_data, housing_type_id)
 
     # create dataframe
-    base_dataframe = pd.DataFrame(raw_baseline_data).rename(columns=header_mappings)
+    baseline_dataframe = pd.DataFrame(raw_data)
 
-    # massage data in dataframes
-    base_dataframe[custom_column_zhvi] = base_dataframe[custom_column_zhvi].astype(float)  # cast string to float
-    base_dataframe[custom_column_date] = pd.to_datetime(base_dataframe[custom_column_date])  # convert to pandas date
+    # format percentages
+    if not is_raw_data:
+        baseline_dataframe[custom_column_percent_min] = baseline_dataframe[custom_column_percent_min].apply(
+            percent_formatter)
+        baseline_dataframe[custom_column_percent_max] = baseline_dataframe[custom_column_percent_max].apply(
+            percent_formatter)
+        baseline_dataframe[custom_column_percent_avg] = baseline_dataframe[custom_column_percent_avg].apply(
+            percent_formatter)
+        baseline_dataframe[custom_column_percent_stddev] = baseline_dataframe[custom_column_percent_stddev].apply(
+            percent_formatter)
+        baseline_dataframe[custom_column_years_min] = baseline_dataframe[custom_column_years_min].apply(
+            double_formatter)
+        baseline_dataframe[custom_column_years_max] = baseline_dataframe[custom_column_years_max].apply(
+            double_formatter)
+        baseline_dataframe[custom_column_years_avg] = baseline_dataframe[custom_column_years_avg].apply(
+            double_formatter)
+        baseline_dataframe[custom_column_years_stddev] = baseline_dataframe[custom_column_years_stddev].apply(
+            double_formatter)
 
-    summary_dataframe[zillow_column_city] = base_dataframe.groupby(default_groupby)[zillow_column_city].first()
-    summary_dataframe[zillow_column_state] = base_dataframe.groupby(default_groupby)[zillow_column_state].first()
-
-    summary_dataframe = summary_dataframe.sort_values(custom_column_appreciation,
-                                                      ascending=False)  # sort table to find highest movers
-
-    return summary_dataframe
+    return baseline_dataframe

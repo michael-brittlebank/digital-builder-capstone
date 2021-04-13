@@ -1,9 +1,14 @@
-from .mysql import *
+import logging
+import mysql.connector
+from mysql.connector import errorcode
+
+from ._helpers import get_connection, close_connection_or_cursor
+from ..enums import *
 
 
 def select_location_by_region_name_and_housing_type(region_name, housing_type_id):
     connection = get_connection()
-    cursor = connection.cursor(buffered=True)
+    cursor = connection.cursor(buffered=True, dictionary=True)
     location = None
     try:
         get_location_data = ("SELECT * FROM {table_name} "
@@ -54,7 +59,7 @@ def insert_location(data, header_row, housing_type_id):
             column_city=column_city
         )
         cursor.execute(insert_location_data)
-        # Make sure data is committed to the database
+        # Make sure data is committed to the mysql_database
         connection.commit()
         location_id = cursor.lastrowid
     except mysql.connector.Error as err:
