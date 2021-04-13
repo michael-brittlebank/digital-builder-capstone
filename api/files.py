@@ -13,7 +13,7 @@ ingest_parser.add_argument(
     trim=True
 )
 ingest_parser.add_argument(
-    arg_ingest_type,
+    arg_housing_type,
     required=True,
     choices=(zillow_data_type_condo, zillow_data_type_sfr),
     help='The type of files being uploaded',
@@ -26,7 +26,7 @@ class IngestClass(Resource):
     @api.expect(ingest_parser)
     def post(self):
         args = ingest_parser.parse_args()
-        data_type = args[arg_ingest_type]
+        data_type = args[arg_housing_type]
         raw_data = import_csv(args[arg_ingest_filename])
         filtered_data = ingest_zillow_data(raw_data, data_type)
         debug_mode = os.getenv(env_flask_debug_mode)

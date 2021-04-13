@@ -5,7 +5,7 @@ import os
 import datetime
 
 from modules.enums import *
-from ..data.baseline import calculate_baseline_data
+from ..data.baseline import calculate_housing_metrics
 
 _connection_pool = None
 
@@ -197,7 +197,7 @@ def select_location_by_region_name_and_housing_type(region_name, housing_type_id
 
 def select_housing_type_by_name(housing_type_name):
     connection = get_connection()
-    cursor = connection.cursor(buffered=True)
+    cursor = connection.cursor(buffered=True, dictionary=True)
     housing_type = None
     try:
         get_location_data = ("SELECT * FROM {table_name} "
@@ -265,7 +265,7 @@ def insert_housing_data(rows, header_row, data_type):
     try:
         # get housing type id
         housing_type = select_housing_type_by_name(data_type)
-        housing_type_id = housing_type[0]
+        housing_type_id = housing_type[column_housing_type_id]
 
         location_data = rows[0]  # assume only one location will be sent in a batch
         region_name = location_data[header_row.index(zillow_column_region_name)]
@@ -422,7 +422,7 @@ def calculate_metrics(config=None):
                     column_zhvi=column_zhvi
                 )
                 date_zhvi_cursor.execute(get_locations_data)
-                summary_data = calculate_baseline_data(date_zhvi_cursor.fetchall())
+                summary_data = calculate_housing_metrics(date_zhvi_cursor.fetchall())
                 values = ("({column_location_id},{column_zhvi_start},{column_zhvi_end},'{column_date_start}',"
                           "'{column_date_end}',{column_zhvi_min},{column_zhvi_max},{column_date_difference},"
                           "{column_zhvi_percent_change})").format(

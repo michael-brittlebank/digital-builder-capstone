@@ -1,3 +1,4 @@
+# do not change the string values of these enums, they're specific to the csv import process
 zillow_column_region_id = "RegionID"
 zillow_column_size_rank = "SizeRank"
 zillow_column_region_name = "RegionName"
@@ -8,13 +9,14 @@ zillow_column_city = "City"
 zillow_column_metro = "Metro"
 zillow_column_county_name = "CountyName"
 
+# these string values are for the formatted output
 custom_column_housing_type = "Housing Type"
 custom_column_date = "Date"
 custom_column_zhvi = "ZHVI"
 custom_column_appreciation = '% Per Year'
 custom_column_zhvi_start = 'Starting ZHVI'
 custom_column_zhvi_end = 'Final ZHVI'
-custom_column_years_difference = 'Years Diff'
+custom_column_years_difference = 'Years Available'
 custom_column_start_date = 'Start Date'
 custom_column_end_date = 'End Date'
 custom_column_zhvi_min = 'ZHVI Min'
