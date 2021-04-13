@@ -1,7 +1,7 @@
 from flask import make_response
 from flask_restx import Namespace, reqparse, Resource
 from modules.files import *
-from modules.enums import *
+from modules.database import *
 
 api = Namespace('files', description='File related operations', validate=True)
 
