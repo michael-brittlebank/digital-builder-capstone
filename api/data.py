@@ -20,7 +20,9 @@ base_parser.add_argument(
     default=True,
     help='Return data for AmFam operating states only'
 )
-base_parser.add_argument(
+
+leaders_parser = base_parser.copy()
+leaders_parser.add_argument(
     arg_housing_type,
     required=True,
     choices=(zillow_data_type_condo, zillow_data_type_sfr),
@@ -37,17 +39,16 @@ class BaselineClass(Resource):
         args = base_parser.parse_args()
         amfam_data_only = args[arg_baseline_amfam_only]
         raw_data = args[arg_baseline_raw_data]
-        housing_type = args[arg_housing_type]
-        data = get_baseline_data(amfam_data_only, housing_type, raw_data)
+        data = get_baseline_data(amfam_data_only, raw_data)
         return make_response(data.head(25).to_csv(), 200, headers)
 
 
 @api.route('/leaders')
 class ForecastClass(Resource):
-    @api.expect(base_parser)
+    @api.expect(leaders_parser)
     def get(self):
         headers = {'Content-Type': 'text/csv'}
-        args = base_parser.parse_args()
+        args = leaders_parser.parse_args()
         amfam_data_only = args[arg_baseline_amfam_only]
         raw_data = args[arg_baseline_raw_data]
         housing_type = args[arg_housing_type]
