@@ -17,7 +17,9 @@ def select_baseline_data(is_only_amfam_data, housing_type_id, config=None):
         connection = get_connection(config)
         cursor = connection.cursor(dictionary=True)
         get_location_data = (
-            "SELECT MIN({column_zhvi_percent_change}) as '{custom_column_percent_min}', "
+            "SELECT "
+            " COUNT({column_zhvi_percent_change}) as '{custom_column_results_count}', "
+            " MIN({column_zhvi_percent_change}) as '{custom_column_percent_min}', "
             " MAX({column_zhvi_percent_change}) as '{custom_column_percent_max}', "
             " AVG({column_zhvi_percent_change}) as '{custom_column_percent_avg}', "
             " stddev({column_zhvi_percent_change}) as '{custom_column_percent_stddev}', "
@@ -48,7 +50,8 @@ def select_baseline_data(is_only_amfam_data, housing_type_id, config=None):
             custom_column_years_max=custom_column_years_max,
             custom_column_years_avg=custom_column_years_avg,
             custom_column_years_stddev=custom_column_years_stddev,
-            custom_column_percent_stddev=custom_column_percent_stddev
+            custom_column_percent_stddev=custom_column_percent_stddev,
+            custom_column_results_count=custom_column_results_count
         )
         cursor.execute(get_location_data)
         data = cursor.fetchall()

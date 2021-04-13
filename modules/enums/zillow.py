@@ -29,6 +29,7 @@ custom_column_years_min = 'Years Min'
 custom_column_years_max = 'Years Max'
 custom_column_years_avg = 'Years Avg'
 custom_column_years_stddev = 'Years Stddev'
+custom_column_results_count = 'Count'
 
 zillow_named_column_indexes = [zillow_column_region_id, zillow_column_size_rank, zillow_column_region_name,
                                zillow_column_region_type, zillow_column_state_name, zillow_column_state,
