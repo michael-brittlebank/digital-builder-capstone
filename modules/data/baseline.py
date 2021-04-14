@@ -4,7 +4,7 @@ from ._helpers import percent_formatter, double_formatter
 
 
 def get_baseline_data(is_only_amfam_data, is_raw_data):
-    from ..database import select_housing_type_by_name, select_baseline_data
+    from ..database import select_housing_type_by_name, select_baseline_summary_data
 
     dataframes = []
 
@@ -14,7 +14,7 @@ def get_baseline_data(is_only_amfam_data, is_raw_data):
         housing_type_id = housing_type[column_housing_type_id]
 
         # db call
-        raw_data = select_baseline_data(is_only_amfam_data, housing_type_id)
+        raw_data = select_baseline_summary_data(is_only_amfam_data, housing_type_id)
         raw_dataframe = pd.DataFrame(raw_data)
         raw_dataframe[custom_column_housing_type] = housing_type_name
         raw_dataframe.set_index([custom_column_housing_type], inplace=True)

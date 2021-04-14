@@ -3,7 +3,7 @@ import os
 from flask import make_response
 from flask_restx import Namespace, reqparse, Resource
 from modules.files import *
-from modules.database import create_application_tables, insert_housing_types, calculate_metrics
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi
 
 api = Namespace('files', description='File related operations', validate=True)
 
@@ -45,8 +45,14 @@ class PopulateClass(Resource):
         return make_response('', 204)
 
 
-@api.route('/calculate')
-class CalculateClass(Resource):
+@api.route('/calculate-metrics')
+class CalculateMetricsClass(Resource):
     def post(self):
         calculate_metrics()
+        return make_response('', 204)
+
+@api.route('/calculate-zhvi')
+class CalculateZhviClass(Resource):
+    def post(self):
+        calculate_average_zhvi()
         return make_response('', 204)

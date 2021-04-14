@@ -38,3 +38,7 @@ zillow_named_column_indexes = [zillow_column_region_id, zillow_column_size_rank,
 zillow_data_type_condo = "Condo"
 zillow_data_type_sfr = "SingleFamilyResidence"
 zillow_data_housing_types = [zillow_data_type_condo, zillow_data_type_sfr]
+
+
+zillow_data_start = 1996
+zillow_data_end = 2021

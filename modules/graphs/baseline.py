@@ -5,7 +5,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from ..data import get_baseline_data
 from ._helpers import formatter_percent, formatter_currency
 from ..files import export_graph
 from ..enums import *

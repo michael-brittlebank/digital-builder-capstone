@@ -145,6 +145,23 @@ def create_application_tables():
         column_date_difference=column_date_difference,
         column_zhvi_percent_change=column_zhvi_percent_change
     )
+    tables[table_average_zhvi] = (
+        "CREATE TABLE `{table_name}` ("
+        "  `{column_average_zhvi_id}` int NOT NULL AUTO_INCREMENT,"
+        "  `{housing_type_id}` int NOT NULL,"
+        "  `{column_year}` int NOT NULL,"
+        "  `{column_average_zhvi}` int NOT NULL,"
+        "  PRIMARY KEY (`{column_average_zhvi_id}`),"
+        "  FOREIGN KEY (`{housing_type_id}`) "
+        "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
+        ") ENGINE=InnoDB").format(
+        table_name=table_average_zhvi,
+        column_average_zhvi_id="average_zhvi_id",
+        housing_type_table=table_housing_type,
+        housing_type_id=column_housing_type_id,
+        column_year=column_year,
+        column_average_zhvi=column_average_zhvi
+    )
     for table_name in tables:
         table_description = tables[table_name]
         try:
