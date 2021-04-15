@@ -1,18 +1,13 @@
 import logging
 import mysql.connector
 
-from ._helpers import get_connection, close_connection_or_cursor
+from ._helpers import get_connection, close_connection_or_cursor, get_amfam_only_condition
 from ..enums import *
 
 
 def select_baseline_summary_data(is_only_amfam_data, housing_type_id, config=None):
     data = []
-    amfam_operating_states_condition = ""
-    if is_only_amfam_data:
-        amfam_operating_states_condition = "AND {location_table}.{column_state} IN('{amfam_territory_states}')".format(
-            location_table=table_locations,
-            column_state=column_state,
-            amfam_territory_states="','".join(amfam_territory_states))
+    amfam_operating_states_condition = "" if not is_only_amfam_data else get_amfam_only_condition()
     try:
         connection = get_connection(config)
         cursor = connection.cursor(dictionary=True)
@@ -66,12 +61,7 @@ def select_baseline_summary_data(is_only_amfam_data, housing_type_id, config=Non
 
 def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
     data = []
-    amfam_operating_states_condition = ""
-    if is_only_amfam_data:
-        amfam_operating_states_condition = "AND {location_table}.{column_state} IN('{amfam_territory_states}')".format(
-            location_table=table_locations,
-            column_state=column_state,
-            amfam_territory_states="','".join(amfam_territory_states))
+    amfam_operating_states_condition = "" if not is_only_amfam_data else get_amfam_only_condition()
     try:
         connection = get_connection(config)
         cursor = connection.cursor(dictionary=True)
@@ -127,12 +117,7 @@ def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
 
 def select_baseline_raw_data(is_only_amfam_data, housing_type_id, config=None):
     data = []
-    amfam_operating_states_condition = ""
-    if is_only_amfam_data:
-        amfam_operating_states_condition = "AND {location_table}.{column_state} IN('{amfam_territory_states}')".format(
-            location_table=table_locations,
-            column_state=column_state,
-            amfam_territory_states="','".join(amfam_territory_states))
+    amfam_operating_states_condition = "" if not is_only_amfam_data else get_amfam_only_condition()
     try:
         connection = get_connection(config)
         cursor = connection.cursor(dictionary=True)

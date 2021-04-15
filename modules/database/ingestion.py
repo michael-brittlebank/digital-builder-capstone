@@ -151,7 +151,10 @@ def create_application_tables():
         "  `{housing_type_id}` int NOT NULL,"
         "  `{column_year}` int NOT NULL,"
         "  `{column_average_zhvi}` int NOT NULL,"
+        "  `{column_amfam_only}` TINYINT NOT NULL,"
         "  PRIMARY KEY (`{column_average_zhvi_id}`),"
+        "  UNIQUE KEY (`{housing_type_id}`,`{column_year}`,`{column_amfam_only}`), "
+        "  KEY `housing_type_id` (`housing_type_id`),"
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
@@ -160,7 +163,8 @@ def create_application_tables():
         housing_type_table=table_housing_type,
         housing_type_id=column_housing_type_id,
         column_year=column_year,
-        column_average_zhvi=column_average_zhvi
+        column_average_zhvi=column_average_zhvi,
+        column_amfam_only=column_amfam_only
     )
     for table_name in tables:
         table_description = tables[table_name]

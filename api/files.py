@@ -1,7 +1,7 @@
 import os
 
 from flask import make_response
-from flask_restx import Namespace, reqparse, Resource
+from flask_restx import inputs, Namespace, reqparse, Resource
 from modules.files import *
 from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi
 
@@ -22,6 +22,14 @@ ingest_parser.add_argument(
     default=zillow_data_type_condo
 )
 
+calculate_parser = reqparse.RequestParser()
+calculate_parser.add_argument(
+    arg_baseline_amfam_only,
+    type=inputs.boolean,
+    required=True,
+    default=True,
+    help='Calculate data for AmFam operating states only'
+)
 
 @api.route('/ingest')
 class IngestClass(Resource):
@@ -53,6 +61,9 @@ class CalculateMetricsClass(Resource):
 
 @api.route('/calculate-zhvi')
 class CalculateZhviClass(Resource):
+    @api.expect(calculate_parser)
     def post(self):
-        calculate_average_zhvi()
+        args = calculate_parser.parse_args()
+        amfam_only = args[arg_baseline_amfam_only]
+        calculate_average_zhvi(amfam_only)
         return make_response('', 204)

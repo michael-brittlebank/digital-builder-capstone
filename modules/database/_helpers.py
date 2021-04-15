@@ -38,3 +38,10 @@ def get_connection(config=None):
 def close_connection_or_cursor(connection_cursor):
     if connection_cursor is not None:
         connection_cursor.close()
+
+
+def get_amfam_only_condition():
+    return "AND {location_table}.{column_state} IN('{amfam_territory_states}')".format(
+        location_table=table_locations,
+        column_state=column_state,
+        amfam_territory_states="','".join(amfam_territory_states))
