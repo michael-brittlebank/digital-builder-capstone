@@ -27,7 +27,7 @@ def calculate_metrics(config=None):
                 # for each location get all date_zhvi records
                 get_locations_data = ("SELECT {column_date}, {column_zhvi} FROM {table_name} "
                                       "WHERE {column_location_id}={location_id}").format(
-                    table_name=table_date_zhvi,
+                    table_name=table_zhvi_month,
                     column_location_id=column_location_id,
                     location_id=location_id,
                     column_date=column_date,
@@ -53,7 +53,7 @@ def calculate_metrics(config=None):
                                            "{column_date_start},{column_date_end},{column_zhvi_min},{column_zhvi_max},"
                                            "{column_date_difference},{column_zhvi_percent_change}) "
                                            "VALUES {values}").format(
-                    table_name=table_calculations,
+                    table_name=table_location_metrics,
                     values=values,
                     column_location_id=column_location_id,
                     column_zhvi_start=column_zhvi_start,

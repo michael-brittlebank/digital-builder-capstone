@@ -12,7 +12,7 @@ def insert_housing_types():
     add_housing_type = ("INSERT INTO {table_name} "
                         "({column_housing_type}) "
                         "VALUES (%s)").format(
-        table_name=table_housing_type,
+        table_name=table_location_housing_type,
         column_housing_type=column_housing_type
     )
     for housing_type in zillow_data_housing_types:
@@ -39,7 +39,7 @@ def select_housing_type_by_name(housing_type_name):
         get_location_data = ("SELECT * FROM {table_name} "
                              "WHERE {column_housing_type}='{housing_type}' "
                              "LIMIT 1").format(
-            table_name=table_housing_type,
+            table_name=table_location_housing_type,
             housing_type=housing_type_name,
             column_housing_type=column_housing_type
         )

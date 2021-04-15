@@ -34,9 +34,9 @@ def calculate_average_zhvi(is_only_amfam_data, config=None):
                         " AND YEAR({column_date})={year} "
                         " {amfam_operating_states_condition} "
                         " GROUP BY YEAR({column_date})").format(
-                        date_zhvi_table=table_date_zhvi,
+                        date_zhvi_table=table_zhvi_month,
                         locations_table=table_locations,
-                        housing_type_table=table_housing_type,
+                        housing_type_table=table_location_housing_type,
                         column_location_id=column_location_id,
                         column_date=column_date,
                         year=year,
@@ -60,7 +60,7 @@ def calculate_average_zhvi(is_only_amfam_data, config=None):
                                                 "({column_housing_type_id},{column_year},{column_average_zhvi},"
                                                 "{column_amfam_only}) "
                                                 "VALUES {values}").format(
-                        table_name=table_average_zhvi,
+                        table_name=table_zhvi_year,
                         values=values,
                         column_housing_type_id=column_housing_type_id,
                         column_year=column_year,
@@ -96,8 +96,8 @@ def select_average_zhvi(config=None):
             " FROM {average_zhvi_table} "
             "INNER JOIN {housing_type_table} ON {housing_type_table}.{column_housing_type_id}={average_zhvi_table}.{"
             "column_housing_type_id} ").format(
-            average_zhvi_table=table_average_zhvi,
-            housing_type_table=table_housing_type,
+            average_zhvi_table=table_zhvi_year,
+            housing_type_table=table_location_housing_type,
             column_average_zhvi=column_average_zhvi,
             column_housing_type_id=column_housing_type_id,
             column_housing_type=column_housing_type,

@@ -29,9 +29,9 @@ def select_baseline_summary_data(is_only_amfam_data, housing_type_id, config=Non
             " WHERE {location_table}.{column_housing_type_id} = {housing_type_id}"
             " {amfam_operating_states_condition}"
         ).format(
-            calculations_table=table_calculations,
+            calculations_table=table_location_metrics,
             location_table=table_locations,
-            housing_type_table=table_housing_type,
+            housing_type_table=table_location_housing_type,
             column_housing_type_id=column_housing_type_id,
             column_zhvi_percent_change=column_zhvi_percent_change,
             column_date_difference=column_date_difference,
@@ -81,10 +81,10 @@ def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
             " ORDER BY {column_zhvi_percent_change} DESC"
             " LIMIT 25"
         ).format(
-            calculations_table=table_calculations,
+            calculations_table=table_location_metrics,
             location_table=table_locations,
-            housing_type_table=table_housing_type,
-            date_zhvi_table=table_date_zhvi,
+            housing_type_table=table_location_housing_type,
+            date_zhvi_table=table_zhvi_month,
             column_region_name=column_region_name,
             column_state=column_state,
             column_city=column_city,
@@ -139,9 +139,9 @@ def select_baseline_raw_data(is_only_amfam_data, housing_type_id, config=None):
             " WHERE {location_table}.{column_housing_type_id} = {housing_type_id}"
             " {amfam_operating_states_condition}"
         ).format(
-            calculations_table=table_calculations,
+            calculations_table=table_location_metrics,
             location_table=table_locations,
-            housing_type_table=table_housing_type,
+            housing_type_table=table_location_housing_type,
             column_housing_type_id=column_housing_type_id,
             column_zhvi_percent_change=column_zhvi_percent_change,
             column_date_difference=column_date_difference,

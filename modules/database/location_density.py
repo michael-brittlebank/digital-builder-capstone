@@ -4,4 +4,5 @@ from mysql.connector import errorcode
 
 
 def calculate_density():
+
     return 0

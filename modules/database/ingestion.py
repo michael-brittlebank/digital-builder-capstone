@@ -42,7 +42,7 @@ def insert_housing_data(rows, header_row, data_type):
             ("INSERT INTO {table_name} "
              "({column_location_id}, {column_date}, {column_zhvi}) "
              "VALUES {values}").format(
-                table_name=table_date_zhvi,
+                table_name=table_zhvi_month,
                 column_location_id=column_location_id,
                 column_zhvi=column_zhvi,
                 column_date=column_date,
@@ -67,32 +67,33 @@ def create_application_tables():
     connection = get_connection()
     cursor = connection.cursor()
     tables = {}
-    tables[table_housing_type] = (
+    tables[table_location_housing_type] = (
         "CREATE TABLE `{table_name}` ("
         "  `{column_housing_type_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{column_housing_type}` varchar(255) NOT NULL UNIQUE,"
         "  PRIMARY KEY (`{column_housing_type_id}`)"
         ") ENGINE=InnoDB").format(
-        table_name=table_housing_type,
+        table_name=table_location_housing_type,
         column_housing_type_id=column_housing_type_id,
         column_housing_type=column_housing_type
     )
-    tables[table_date_zhvi] = (
+    tables[table_zhvi_month] = (
         "CREATE TABLE `{table_name}` ("
-        "  `date_zhvi_id` int NOT NULL AUTO_INCREMENT,"
+        "  `{zhvi_month_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{column_location_id}` int NOT NULL,"
         "  `{column_date}` datetime NOT NULL,"
         "  `{column_zhvi}` int NOT NULL,"
-        "  PRIMARY KEY (`date_zhvi_id`),"
+        "  PRIMARY KEY (`{zhvi_month_id}`),"
         "  UNIQUE KEY (`{column_date}`,`{column_location_id}`), KEY `location_id` (`{column_location_id}`),"
         "  FOREIGN KEY (`{column_location_id}`) "
         "  REFERENCES `{table_locations}` (`{column_location_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-        table_name=table_date_zhvi,
+        table_name=table_zhvi_month,
         table_locations=table_locations,
         column_location_id=column_location_id,
         column_zhvi=column_zhvi,
-        column_date=column_date
+        column_date=column_date,
+        zhvi_month_id="zhvi_month_id"
     )
     tables[table_locations] = (
         "CREATE TABLE `{table_name}` ("
@@ -109,14 +110,14 @@ def create_application_tables():
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
         table_name=table_locations,
-        housing_type_table=table_housing_type,
+        housing_type_table=table_location_housing_type,
         column_location_id=column_location_id,
         housing_type_id=column_housing_type_id,
         column_region_name=column_region_name,
         column_state=column_state,
         column_city=column_city
     )
-    tables[table_calculations] = (
+    tables[table_location_metrics] = (
         "CREATE TABLE `{table_name}` ("
         "  `calculation_id` int NOT NULL AUTO_INCREMENT,"
         "  `{column_location_id}` int NOT NULL,"
@@ -133,7 +134,7 @@ def create_application_tables():
         "  FOREIGN KEY (`{column_location_id}`)"
         "  REFERENCES `{location_table}` (`{column_location_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-        table_name=table_calculations,
+        table_name=table_location_metrics,
         location_table=table_locations,
         column_location_id=column_location_id,
         column_zhvi_start=column_zhvi_start,
@@ -145,7 +146,7 @@ def create_application_tables():
         column_date_difference=column_date_difference,
         column_zhvi_percent_change=column_zhvi_percent_change
     )
-    tables[table_average_zhvi] = (
+    tables[table_zhvi_year] = (
         "CREATE TABLE `{table_name}` ("
         "  `{column_average_zhvi_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{housing_type_id}` int NOT NULL,"
@@ -158,15 +159,15 @@ def create_application_tables():
         "  FOREIGN KEY (`{housing_type_id}`) "
         "  REFERENCES `{housing_type_table}` (`{housing_type_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-        table_name=table_average_zhvi,
+        table_name=table_zhvi_year,
         column_average_zhvi_id="average_zhvi_id",
-        housing_type_table=table_housing_type,
+        housing_type_table=table_location_housing_type,
         housing_type_id=column_housing_type_id,
         column_year=column_year,
         column_average_zhvi=column_average_zhvi,
         column_amfam_only=column_amfam_only
     )
-    tables[table_locations_density] = (
+    tables[table_location_density] = (
         "CREATE TABLE `{table_name}` ("
         "  `{column_location_density_id}` int NOT NULL AUTO_INCREMENT,"
         "  `{column_location_id}` int NOT NULL,"
@@ -175,7 +176,7 @@ def create_application_tables():
         "  FOREIGN KEY (`{column_location_id}`)"
         "  REFERENCES `{location_table}` (`{column_location_id}`) ON DELETE CASCADE"
         ") ENGINE=InnoDB").format(
-        table_name=table_locations_density,
+        table_name=table_location_density,
         location_table=table_locations,
         column_location_density_id="location_density_id",
         column_amfam_only=column_amfam_only,
