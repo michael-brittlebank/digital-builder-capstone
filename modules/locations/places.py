@@ -8,7 +8,8 @@ from .geocode import get_location_for_zipcode
 from ._helpers import convert_miles_to_meters
 from ..enums import *
 from ..files import export_json
-from ..database import select_location_density_by_zip
+from ..database import select_location_density_by_zip, insert_location_density
+
 
 def get_amfam_locations_by_zipcode(zipcode, radius=10):
     """
@@ -39,7 +40,8 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
                 places_amfam_count: 0
             }
             result_count = get_nearby_places(google_maps, search_arguments, method_arguments)
-            # todo, store location count in db
+            # insert result into database
+            insert_location_density(zipcode, result_count)
         else:
             logging.error("Location not found: %s", location)
             pass
