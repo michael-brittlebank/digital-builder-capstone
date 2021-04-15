@@ -3,7 +3,7 @@ import datetime
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
 from modules.enums import *
-from modules.graphs import get_baseline_graphs
+from modules.graphs import get_zhvi_trend_graphs
 from modules.files import export_dataframe_to_csv
 
 api = Namespace('graphs', description='Graph related operations', validate=True)
@@ -18,14 +18,14 @@ baseline_parser.add_argument(
 )
 
 
-@api.route('/baseline')
-class IngestClass(Resource):
+@api.route('/trend-zhvi')
+class TrendClass(Resource):
     @api.expect(baseline_parser)
     def get(self):
         args = baseline_parser.parse_args()
         amfam_only = args[arg_baseline_amfam_only]
         # get data
-        data = get_baseline_graphs(amfam_only)
+        data = get_zhvi_trend_graphs(amfam_only)
         # export data
         current_datetime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         data_type = "raw"
