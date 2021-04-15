@@ -3,9 +3,9 @@ import os
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
 from modules.files import *
-from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi, calculate_density
 
-api = Namespace('analysis', description='Data related operations', validate=True)
+api = Namespace('data', description='Data related operations', validate=True)
 
 ingest_parser = reqparse.RequestParser()
 ingest_parser.add_argument(
@@ -38,7 +38,8 @@ class IngestClass(Resource):
     def post(self):
         args = ingest_parser.parse_args()
         data_type = args[arg_housing_type]
-        raw_data = import_csv(args[arg_ingest_filename])
+        filename = args[arg_ingest_filename]
+        raw_data = import_csv(filename)
         filtered_data = ingest_zillow_data(raw_data, data_type)
         debug_mode = os.getenv(env_flask_debug_mode)
         if bool(debug_mode):
@@ -68,4 +69,11 @@ class CalculateZhviClass(Resource):
         args = calculate_parser.parse_args()
         amfam_only = args[arg_baseline_amfam_only]
         calculate_average_zhvi(amfam_only)
+        return make_response('', 204)
+
+
+@api.route('/calculate-density')
+class CalculateDensityClass(Resource):
+    def post(self):
+        calculate_density()
         return make_response('', 204)

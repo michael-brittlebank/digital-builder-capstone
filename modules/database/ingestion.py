@@ -166,6 +166,22 @@ def create_application_tables():
         column_average_zhvi=column_average_zhvi,
         column_amfam_only=column_amfam_only
     )
+    tables[table_locations_density] = (
+        "CREATE TABLE `{table_name}` ("
+        "  `{column_location_density_id}` int NOT NULL AUTO_INCREMENT,"
+        "  `{column_location_id}` int NOT NULL,"
+        "  `{column_amfam_agency_count}` int NOT NULL,"
+        "  PRIMARY KEY (`{column_location_density_id}`),"
+        "  FOREIGN KEY (`{column_location_id}`)"
+        "  REFERENCES `{location_table}` (`{column_location_id}`) ON DELETE CASCADE"
+        ") ENGINE=InnoDB").format(
+        table_name=table_locations_density,
+        location_table=table_locations,
+        column_location_density_id="location_density_id",
+        column_amfam_only=column_amfam_only,
+        column_location_id=column_location_id,
+        column_amfam_agency_count=column_amfam_agency_count
+    )
     for table_name in tables:
         table_description = tables[table_name]
         try:
