@@ -3,7 +3,7 @@ import os
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
 from modules.files import *
-from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi, calculate_density
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi, select_location_densities
 
 api = Namespace('data', description='Data related operations', validate=True)
 
@@ -75,5 +75,5 @@ class CalculateZhviClass(Resource):
 @api.route('/calculate-agency-density')
 class CalculateDensityClass(Resource):
     def post(self):
-        calculate_density()
+        select_location_densities()
         return make_response('', 204)

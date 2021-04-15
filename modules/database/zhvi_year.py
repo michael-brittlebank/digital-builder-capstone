@@ -4,7 +4,7 @@ from mysql.connector import errorcode
 
 from ._helpers import get_connection, close_connection_or_cursor, get_amfam_only_condition
 from ..enums import *
-from .housing_types import select_housing_type_by_name
+from .location_housing_types import select_housing_type_by_name
 
 
 def calculate_average_zhvi(is_only_amfam_data, config=None):

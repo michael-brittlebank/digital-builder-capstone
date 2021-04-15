@@ -4,7 +4,7 @@ import mysql.connector
 from mysql.connector import errorcode
 
 from ..enums import *
-from .housing_types import select_housing_type_by_name
+from .location_housing_types import select_housing_type_by_name
 from .locations import select_location_by_region_name_and_housing_type, insert_location
 from ._helpers import get_connection, close_connection_or_cursor
 
@@ -170,17 +170,16 @@ def create_application_tables():
     tables[table_location_density] = (
         "CREATE TABLE `{table_name}` ("
         "  `{column_location_density_id}` int NOT NULL AUTO_INCREMENT,"
-        "  `{column_location_id}` int NOT NULL,"
+        "  `{column_region_name}` int NOT NULL,"
         "  `{column_amfam_agency_count}` int NOT NULL,"
         "  PRIMARY KEY (`{column_location_density_id}`),"
-        "  FOREIGN KEY (`{column_location_id}`)"
-        "  REFERENCES `{location_table}` (`{column_location_id}`) ON DELETE CASCADE"
+        "  UNIQUE KEY (`{column_region_name}`)"
         ") ENGINE=InnoDB").format(
         table_name=table_location_density,
         location_table=table_locations,
         column_location_density_id="location_density_id",
         column_amfam_only=column_amfam_only,
-        column_location_id=column_location_id,
+        column_region_name=column_region_name,
         column_amfam_agency_count=column_amfam_agency_count
     )
     for table_name in tables:
