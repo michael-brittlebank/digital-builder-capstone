@@ -26,7 +26,8 @@ def get_leaders_data(is_only_amfam_data, housing_type_name, is_raw_data):
         column_date_start: custom_column_start_date,
         column_date_end: custom_column_end_date,
         column_date_difference: custom_column_years_difference,
-        column_zhvi_percent_change: custom_column_appreciation
+        column_zhvi_percent_change: custom_column_appreciation,
+        column_amfam_agency_count: custom_amfam_agency_density
     }
 
     # create dataframe

@@ -32,6 +32,8 @@ custom_column_years_stddev = 'Years Stddev'
 custom_column_results_count = 'Count'
 custom_column_zhvi_avg = 'ZHVI Avg'
 custom_column_year = "Year"
+custom_amfam_agency_density = "AmFam Agencies"
+
 
 
 zillow_named_column_indexes = [zillow_column_region_id, zillow_column_size_rank, zillow_column_region_name,

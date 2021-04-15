@@ -69,12 +69,15 @@ def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
             "SELECT {location_table}.{column_region_name}, {housing_type_table}.{column_housing_type}, "
             "{location_table}.{column_state}, {location_table}.{column_city}, {column_zhvi_start}, "
             "{column_zhvi_end}, {column_zhvi_min}, {column_zhvi_max}, {column_date_start}, {column_date_end}, "
-            "{column_date_difference}, {column_zhvi_percent_change} "
+            "{column_date_difference}, {column_zhvi_percent_change}, "
+            "{location_density_table}.{column_amfam_agency_count} "
             " FROM {calculations_table}"
             " INNER JOIN {location_table} ON {calculations_table}.{column_location_id}={location_table}.{"
             "column_location_id} "
             " INNER JOIN {housing_type_table} ON {location_table}.{column_housing_type_id}={housing_type_table}.{"
             "column_housing_type_id}"
+            " INNER JOIN {location_density_table} ON {location_table}.{column_region_name}={location_density_table}.{"
+            "column_region_name}"
             " WHERE {location_table}.{column_housing_type_id} = {housing_type_id}"
             " AND {column_date_difference} > {min_years_data}"
             " {amfam_operating_states_condition}"
@@ -85,6 +88,7 @@ def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
             location_table=table_locations,
             housing_type_table=table_location_housing_type,
             date_zhvi_table=table_zhvi_month,
+            location_density_table=table_location_density,
             column_region_name=column_region_name,
             column_state=column_state,
             column_city=column_city,
@@ -100,6 +104,7 @@ def select_leader_data(is_only_amfam_data, housing_type_id, config=None):
             column_date_start=column_date_start,
             column_date_end=column_date_end,
             column_date_difference=column_date_difference,
+            column_amfam_agency_count=column_amfam_agency_count,
             min_years_data=5,  # at least 5 years of records are required for proper comparison
             housing_type_id=housing_type_id,
             amfam_operating_states_condition=amfam_operating_states_condition
