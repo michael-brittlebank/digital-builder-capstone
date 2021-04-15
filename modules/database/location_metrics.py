@@ -43,8 +43,8 @@ def calculate_metrics(config=None):
                     column_zhvi_end=summary_data[custom_column_zhvi_end],
                     column_date_start=summary_data[custom_column_start_date],
                     column_date_end=summary_data[custom_column_end_date],
-                    column_zhvi_min=summary_data[custom_column_zhvi_max],
-                    column_zhvi_max=summary_data[custom_column_zhvi_min],
+                    column_zhvi_min=summary_data[custom_column_zhvi_min],
+                    column_zhvi_max=summary_data[custom_column_zhvi_max],
                     column_date_difference=summary_data[custom_column_years_difference],
                     column_zhvi_percent_change=summary_data[custom_column_appreciation]
                 )
