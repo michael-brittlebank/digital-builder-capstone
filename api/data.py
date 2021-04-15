@@ -1,9 +1,8 @@
-import os
-
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
-from modules.files import *
+from modules.enums import *
 from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi, select_location_densities
+from modules.data import ingest_zillow_csv, calculate_agency_density
 
 api = Namespace('data', description='Data related operations', validate=True)
 
@@ -37,14 +36,10 @@ class IngestClass(Resource):
     @api.expect(ingest_parser)
     def post(self):
         args = ingest_parser.parse_args()
-        data_type = args[arg_housing_type]
+        housing_type = args[arg_housing_type]
         filename = args[arg_ingest_filename]
-        raw_data = import_csv(filename)
-        filtered_data = ingest_zillow_data(raw_data, data_type)
-        debug_mode = os.getenv(env_flask_debug_mode)
-        if bool(debug_mode):
-            export_csv(filtered_data, 'ingested-{type}.csv'.format(type=data_type.lower()), file_export_path_testing)
-        return len(filtered_data)
+        filtered_data_length = ingest_zillow_csv(housing_type, filename)
+        return filtered_data_length
 
 
 @api.route('/populate')
@@ -75,5 +70,5 @@ class CalculateZhviClass(Resource):
 @api.route('/calculate-agency-density')
 class CalculateDensityClass(Resource):
     def post(self):
-        select_location_densities()
+        calculate_agency_density()
         return make_response('', 204)
