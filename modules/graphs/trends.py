@@ -11,27 +11,37 @@ from ..enums import *
 from ..database import select_average_zhvi
 
 
-def get_zhvi_trend_graphs(is_only_amfam_data, config=None):
+def get_zhvi_trend_graph(config=None):
     """
     get_baseline_graphs translates basedata into two exported graphs
     :return: pandas dataframe with summary table
     """
     header_mappings = {column_housing_type: custom_column_housing_type, column_average_zhvi: custom_column_zhvi_avg, column_year: custom_column_year}
-    trend_data = select_average_zhvi(is_only_amfam_data, config)
+    trend_data = select_average_zhvi(config)
     df = pd.DataFrame(trend_data).rename(columns=header_mappings)
-
-    graph_title = "All States"
+    graph_title = "Average ZHVI Over Time"
     condo_data = df[df[custom_column_housing_type] == zillow_data_type_condo]
     sfr_data = df[df[custom_column_housing_type] == zillow_data_type_sfr]
+    condo_amfam_data = condo_data[condo_data[column_amfam_only] == amfam_only_states_indicator]
+    condo_all_data = condo_data[condo_data[column_amfam_only] == all_states_indicator]
+    sfr_amfam_data = sfr_data[sfr_data[column_amfam_only] == amfam_only_states_indicator]
+    sfr_all_data = sfr_data[sfr_data[column_amfam_only] == all_states_indicator]
     fig1 = plt.figure()  # Creating new figure
     ax1 = fig1.add_subplot()  # Creating axis
     ax1.set_title(graph_title)
-    ax1.plot(condo_data[custom_column_year], condo_data[custom_column_zhvi_avg], linestyle="-.", label="Condo")
-    ax1.plot(condo_data[custom_column_year], sfr_data[custom_column_zhvi_avg], linestyle=":", label="SFR")
+
+    ax1.plot(sfr_all_data[custom_column_year], sfr_all_data[custom_column_zhvi_avg], linestyle="solid",
+             label="SFR (All States)")
+    ax1.plot(sfr_all_data[custom_column_year], condo_all_data[custom_column_zhvi_avg], linestyle="dotted",
+             label="Condo (All States)")
+    ax1.plot(sfr_all_data[custom_column_year], sfr_amfam_data[custom_column_zhvi_avg], linestyle="dashed",
+             label="SFR (AmFam States)")
+    ax1.plot(sfr_all_data[custom_column_year], condo_amfam_data[custom_column_zhvi_avg], linestyle="dashdot",
+             label="Condo (AmFam States)")
     ax1.yaxis.set_major_formatter(plt.FuncFormatter(formatter_currency))
     ax1.legend()
 
-    export_graph(ax1, "all-states")
+    export_graph(ax1, "zhvi-trend")
 
     return df
 

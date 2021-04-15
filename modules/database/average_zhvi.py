@@ -54,7 +54,7 @@ def calculate_average_zhvi(is_only_amfam_data, config=None):
                         column_housing_type_id=housing_type_id,
                         column_year=average_zhvi_data[column_year],
                         column_average_zhvi=average_zhvi_data[column_average_zhvi],
-                        column_amfam_only=1 if is_only_amfam_data else 0
+                        column_amfam_only=amfam_only_states_indicator if is_only_amfam_data else all_states_indicator
                     )
                     insert_average_zhvi_data = ("INSERT INTO {table_name} "
                                                 "({column_housing_type_id},{column_year},{column_average_zhvi},"
@@ -85,29 +85,24 @@ def calculate_average_zhvi(is_only_amfam_data, config=None):
         logging.exception(err)
 
 
-def select_average_zhvi(is_only_amfam_data, config=None):
+def select_average_zhvi(config=None):
     data = []
-    amfam_operating_states_condition = 0
-    if is_only_amfam_data:
-        amfam_operating_states_condition = 1
     try:
         select_connection = get_connection(config)
         select_cursor = select_connection.cursor(dictionary=True)
         get_average_zhvi_data = (
             "SELECT {housing_type_table}.{column_housing_type}, {average_zhvi_table}.{column_year}, "
-            "{average_zhvi_table}.{column_average_zhvi} "
+            "{average_zhvi_table}.{column_average_zhvi}, {average_zhvi_table}.{column_amfam_only} "
             " FROM {average_zhvi_table} "
             "INNER JOIN {housing_type_table} ON {housing_type_table}.{column_housing_type_id}={average_zhvi_table}.{"
-            "column_housing_type_id} "
-            "AND {average_zhvi_table}.{column_amfam_only}={amfam_operating_states_condition}").format(
+            "column_housing_type_id} ").format(
             average_zhvi_table=table_average_zhvi,
             housing_type_table=table_housing_type,
             column_average_zhvi=column_average_zhvi,
             column_housing_type_id=column_housing_type_id,
             column_housing_type=column_housing_type,
             column_year=column_year,
-            column_amfam_only=column_amfam_only,
-            amfam_operating_states_condition=amfam_operating_states_condition
+            column_amfam_only=column_amfam_only
         )
         select_cursor.execute(get_average_zhvi_data)
         data = select_cursor.fetchall()

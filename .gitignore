@@ -131,3 +131,4 @@ dmypy.json
 .idea/
 files/output/graphs/
 files/output/testing/
+files/output/csv/
