@@ -1,56 +1,71 @@
+import os
+
 from flask import make_response
 from flask_restx import inputs, Namespace, reqparse, Resource
-from modules.enums import *
-from modules.data import get_baseline_data, get_leaders_data
+from modules.files import *
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi
 
-api = Namespace('data', description='Data related operations', validate=True)
+api = Namespace('analysis', description='Data related operations', validate=True)
 
-base_parser = reqparse.RequestParser()
-base_parser.add_argument(
-    arg_baseline_raw_data,
-    type=inputs.boolean,
+ingest_parser = reqparse.RequestParser()
+ingest_parser.add_argument(
+    arg_ingest_filename,
     required=True,
-    default=False,
-    help='Return raw data instead of formatted output'
+    help='The filename to be csv',
+    trim=True
 )
-base_parser.add_argument(
+ingest_parser.add_argument(
+    arg_housing_type,
+    required=True,
+    choices=(zillow_data_type_condo, zillow_data_type_sfr),
+    help='The type of files being uploaded',
+    default=zillow_data_type_condo
+)
+
+calculate_parser = reqparse.RequestParser()
+calculate_parser.add_argument(
     arg_baseline_amfam_only,
     type=inputs.boolean,
     required=True,
     default=True,
-    help='Return data for AmFam operating states only'
-)
-
-leaders_parser = base_parser.copy()
-leaders_parser.add_argument(
-    arg_housing_type,
-    required=True,
-    choices=(zillow_data_type_condo, zillow_data_type_sfr),
-    help='Housing type to analyse',
-    default=zillow_data_type_condo
+    help='Calculate analysis for AmFam operating states only'
 )
 
 
-@api.route('/baseline')
-class BaselineClass(Resource):
-    @api.expect(base_parser)
-    def get(self):
-        headers = {'Content-Type': 'text/csv'}
-        args = base_parser.parse_args()
-        amfam_data_only = args[arg_baseline_amfam_only]
-        raw_data = args[arg_baseline_raw_data]
-        data = get_baseline_data(amfam_data_only, raw_data)
-        return make_response(data.head(25).to_csv(), 200, headers)
+@api.route('/ingest')
+class IngestClass(Resource):
+    @api.expect(ingest_parser)
+    def post(self):
+        args = ingest_parser.parse_args()
+        data_type = args[arg_housing_type]
+        raw_data = import_csv(args[arg_ingest_filename])
+        filtered_data = ingest_zillow_data(raw_data, data_type)
+        debug_mode = os.getenv(env_flask_debug_mode)
+        if bool(debug_mode):
+            export_csv(filtered_data, 'ingested-{type}.csv'.format(type=data_type.lower()), file_export_path_testing)
+        return len(filtered_data)
 
 
-@api.route('/leaders')
-class ForecastClass(Resource):
-    @api.expect(leaders_parser)
-    def get(self):
-        headers = {'Content-Type': 'text/csv'}
-        args = leaders_parser.parse_args()
-        amfam_data_only = args[arg_baseline_amfam_only]
-        raw_data = args[arg_baseline_raw_data]
-        housing_type = args[arg_housing_type]
-        data = get_leaders_data(amfam_data_only, housing_type, raw_data)
-        return make_response(data.head(25).to_csv(), 200, headers)
+@api.route('/populate')
+class PopulateClass(Resource):
+    def post(self):
+        create_application_tables()
+        insert_housing_types()
+        return make_response('', 204)
+
+
+@api.route('/calculate-metrics')
+class CalculateMetricsClass(Resource):
+    def post(self):
+        calculate_metrics()
+        return make_response('', 204)
+
+
+@api.route('/calculate-zhvi')
+class CalculateZhviClass(Resource):
+    @api.expect(calculate_parser)
+    def post(self):
+        args = calculate_parser.parse_args()
+        amfam_only = args[arg_baseline_amfam_only]
+        calculate_average_zhvi(amfam_only)
+        return make_response('', 204)

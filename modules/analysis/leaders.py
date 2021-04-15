@@ -1,10 +1,11 @@
 import pandas as pd
 
 from ._helpers import percent_formatter, currency_formatter
-from ..database import *
+from ..enums import *
 
 
 def get_leaders_data(is_only_amfam_data, housing_type_name, is_raw_data):
+    from ..database import select_leader_data, select_housing_type_by_name
 
     # get housing type id
     housing_type = select_housing_type_by_name(housing_type_name)

@@ -2,9 +2,9 @@
 
 from flask_restx import Api
 
-from .files import api as ns_files
 from .data import api as ns_data
-from .locations import api as ns_maps
+from .analysis import api as ns_analysis
+from .locations import api as ns_locations
 from .graphs import api as ns_graphs
 
 api = Api(
@@ -14,7 +14,7 @@ api = Api(
     # All API metadatas
 )
 
-api.add_namespace(ns_files)
-api.add_namespace(ns_data)
-api.add_namespace(ns_maps)
-api.add_namespace(ns_graphs)
+namespaces = [ns_analysis, ns_data, ns_graphs, ns_locations]
+
+for namespace in namespaces:
+    api.add_namespace(namespace)

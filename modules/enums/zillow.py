@@ -29,7 +29,7 @@ custom_column_years_min = 'Years Min'
 custom_column_years_max = 'Years Max'
 custom_column_years_avg = 'Years Avg'
 custom_column_years_stddev = 'Years Stddev'
-custom_column_results_count = 'Count',
+custom_column_results_count = 'Count'
 custom_column_zhvi_avg = 'ZHVI Avg'
 custom_column_year = "Year"
 

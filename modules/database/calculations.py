@@ -4,7 +4,7 @@ from mysql.connector import errorcode
 
 from ._helpers import get_connection, close_connection_or_cursor
 from ..enums import *
-from ..data.metrics import calculate_housing_metrics
+from ..analysis.metrics import calculate_housing_metrics
 
 
 def calculate_metrics(config=None):
