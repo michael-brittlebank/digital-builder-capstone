@@ -25,8 +25,8 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
         google_api_key = os.getenv(env_google_api_key)
         google_maps = googlemaps.Client(key=google_api_key)
         search_arguments = {
-            "location": location,
-            "radius": str(convert_miles_to_meters(radius)),
+            "location": "{},{}".format(location[location_latitude], location[location_longitude]),
+            "radius": convert_miles_to_meters(radius),
             "keyword": "american family",
             "type": ["insurance_agency"]
         }
@@ -35,7 +35,11 @@ def get_amfam_locations_by_zipcode(zipcode, radius=10):
             places_counter: 0,
             places_amfam_count: 0
         }
-        result_count = get_nearby_places(google_maps, search_arguments, method_arguments)
+        try:
+            result_count = get_nearby_places(google_maps, search_arguments, method_arguments)
+        except Exception as err:
+            logging.exception(err)
+            pass
     else:
         logging.error("Location not found: %s", location)
         pass

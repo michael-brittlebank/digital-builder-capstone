@@ -55,14 +55,14 @@ class PopulateClass(Resource):
         return make_response('', 204)
 
 
-@api.route('/calculate-metrics')
+@api.route('/calculate-location-metrics')
 class CalculateMetricsClass(Resource):
     def post(self):
         calculate_metrics()
         return make_response('', 204)
 
 
-@api.route('/calculate-zhvi')
+@api.route('/calculate-yearly-zhvi')
 class CalculateZhviClass(Resource):
     @api.expect(calculate_parser)
     def post(self):
@@ -72,7 +72,7 @@ class CalculateZhviClass(Resource):
         return make_response('', 204)
 
 
-@api.route('/calculate-density')
+@api.route('/calculate-agency-density')
 class CalculateDensityClass(Resource):
     def post(self):
         calculate_density()
