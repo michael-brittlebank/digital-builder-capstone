@@ -1,8 +1,8 @@
 from flask import make_response
-from flask_restx import inputs, Namespace, reqparse, Resource
+from flask_restx import Namespace, reqparse, Resource
 from modules.enums import *
-from modules.database import create_application_tables, insert_housing_types, calculate_metrics, calculate_average_zhvi, select_location_densities
-from modules.data import ingest_zillow_csv, calculate_agency_density
+from modules.database import create_application_tables, insert_housing_types, calculate_metrics
+from modules.data import ingest_zillow_csv, calculate_agency_density, calculate_yearly_zhvi
 
 api = Namespace('data', description='Data related operations', validate=True)
 
@@ -19,15 +19,6 @@ ingest_parser.add_argument(
     choices=(zillow_data_type_condo, zillow_data_type_sfr),
     help='The type of files being uploaded',
     default=zillow_data_type_condo
-)
-
-calculate_parser = reqparse.RequestParser()
-calculate_parser.add_argument(
-    arg_baseline_amfam_only,
-    type=inputs.boolean,
-    required=True,
-    default=True,
-    help='Calculate analysis for AmFam operating states only'
 )
 
 
@@ -59,11 +50,8 @@ class CalculateMetricsClass(Resource):
 
 @api.route('/calculate-yearly-zhvi')
 class CalculateZhviClass(Resource):
-    @api.expect(calculate_parser)
     def post(self):
-        args = calculate_parser.parse_args()
-        amfam_only = args[arg_baseline_amfam_only]
-        calculate_average_zhvi(amfam_only)
+        calculate_yearly_zhvi()
         return make_response('', 204)
 
 

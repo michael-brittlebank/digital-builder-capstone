@@ -6,10 +6,6 @@ from ..enums import *
 from ._helpers import get_connection, close_connection_or_cursor
 
 
-def select_location_densities():
-    return 0
-
-
 def select_location_density_by_zip(zipcode):
     connection = get_connection()
     cursor = connection.cursor(buffered=True, dictionary=True)
